@@ -313,4 +313,14 @@ describe("Preview", () => {
     expect(H.closed).toEqual(["p", "p", "p"]);
     expect(H.overlays[0].props).toEqual({ view: "edit", id: 1 });
   });
+
+  test("run runs the issue, then closes", async () => {
+    await seed();
+    const { cx, render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    on(render(), "issues-run", "on_click")({}, cx);
+    await flush();
+    expect(H.notes[0].title).toBe("Cannot run issue #1");
+    expect(H.closed).toEqual(["p"]);
+  });
 });

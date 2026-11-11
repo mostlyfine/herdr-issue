@@ -247,6 +247,7 @@ class Preview {
         .child(TextView.markdown(`issues-md-${p.id}`, this.issue?.body ?? "")))
       .child(h_flex().pt(14).gap(8).justify_end()
         .child(button(t, "issues-close", "Close", false, close))
+        .child(button(t, "issues-run", "▶ Run", false, (_e, cx) => task(cx, async () => { try { await runIssue(p.id); } finally { close(); } })))
         .child(button(t, "issues-edit", "Edit", true, () => { closeOverlay(p.overlay); openEdit(p.id); })));
   }
 }

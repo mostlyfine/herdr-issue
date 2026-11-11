@@ -6,7 +6,7 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 
 ## Features
 
-- A kanban with four columns: Todo / Doing / Review / Done
+- A kanban with four columns: Todo / Doing / Waiting / Done
 - Add, edit and delete issues; drag and drop to change status
 - Left click shows the body as a markdown preview
 - Added or updated cards flash for a moment
@@ -117,7 +117,7 @@ Written by the agent when it finishes.
 
 1. Creates a worktree on branch `issue/<id>-<title>` in `repository` (reuses it if it exists).
 2. Starts the agent in the `workspace` space or tab and asks it to work on the issue.
-3. The agent logs milestones with the `herdr-issues` skill, checks off acceptance criteria it has verified, writes a summary, and sets the status to `review`.
+3. The agent logs milestones with the `herdr-issues` skill, checks off acceptance criteria it has verified, writes a summary, and sets the status to `waiting`.
 4. After reviewing, move the issue to Done.
 
 ### Skill
@@ -131,7 +131,7 @@ $S new "Title" /path/to/repo
 $S log 3 "Added tests"
 $S check 3 1
 $S summary 3 "What was done, results, open points"
-$S status 3 review
+$S status 3 waiting
 $S run 3        # same as Run on the board (herdr-app must be running)
 ```
 

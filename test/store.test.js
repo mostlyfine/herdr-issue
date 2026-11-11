@@ -105,7 +105,7 @@ describe("files", () => {
     i = await store.get(1);
     expect(i.meta.done_at).toBe("2000-01-01 00:00");
     expect(i.body).toContain("again");
-    await store.setStatus(1, "review");
+    await store.setStatus(1, "waiting");
     expect((await store.get(1)).meta.done_at).toBeUndefined();
   });
 
@@ -121,6 +121,6 @@ test("expired: done for over a day, using done_at or updated", () => {
   expect(store.expired({ meta: { status: "done", done_at: old } })).toBe(true);
   expect(store.expired({ meta: { status: "done", updated: old } })).toBe(true);
   expect(store.expired({ meta: { status: "done", done_at: store.now() } })).toBe(false);
-  expect(store.expired({ meta: { status: "review", done_at: old } })).toBe(false);
+  expect(store.expired({ meta: { status: "waiting", done_at: old } })).toBe(false);
   expect(store.expired({ meta: { status: "done" } })).toBe(false);
 });

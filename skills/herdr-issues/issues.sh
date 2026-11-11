@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|review|done> [note] | log <id> <text> | summary <id> <text> | run <id>
+# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|waiting|done> [note] | log <id> <text> | summary <id> <text> | run <id>
 set -euo pipefail
 
 dir="${ISSUES_DIR:-${HERDR_APP_HOME:-$HOME/.config/herdr-app}/data/issues}"
@@ -54,7 +54,7 @@ case "$cmd" in
     echo "$dir/$id.md" ;;
   status)
     f="$(file_of "${1:-}")"; s="${2:-}"
-    case "$s" in todo|doing|review|done) ;; *) die "status must be one of todo|doing|review|done: $s" ;; esac
+    case "$s" in todo|doing|waiting|done) ;; *) die "status must be one of todo|doing|waiting|done: $s" ;; esac
     prev="$(meta "$f" status)"
     set_meta "$f" status "$s"; set_meta "$f" updated "$(now)"
     if [ "$s" = done ]; then [ "$prev" = done ] && [ -n "$(meta "$f" done_at)" ] || set_meta "$f" done_at "$(now)"

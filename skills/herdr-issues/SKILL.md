@@ -1,6 +1,6 @@
 ---
 name: herdr-issues
-description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, write a summary, update status (todo/doing/review/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". The agent (claude / codex / copilot) started from the kanban records its progress with this skill.
+description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, write a summary, update status (todo/doing/waiting/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". The agent (claude / codex / copilot) started from the kanban records its progress with this skill.
 ---
 
 # herdr-issues
@@ -66,7 +66,7 @@ On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree`
 
 Write `## Acceptance criteria` as a checkbox list (`- [ ] ...`). When creating an issue, derive verifiable criteria from the description.
 
-Status: `todo` not started, `doing` in progress, `review` finished and waiting for a person, `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).
+Status: `todo` not started, `doing` in progress, `waiting` waiting on someone else's action (a review, an answer, another task), `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).
 
 ## When started from the kanban
 
@@ -75,5 +75,5 @@ The first message gives the issue number and file path. Work in this order:
 1. Read it with `show <id>`. The current directory is a git worktree dedicated to this issue.
 2. At each milestone (investigation, decision, implementation, tests) record one line with `log <id> "<what you did and the result>"`.
 3. Each time an acceptance criterion is met, run `check <id> <n>`. Never check one you have not verified.
-4. If you need the person's input, `log` that first, then ask.
-5. When finished, write `summary <id> "<what was done, results, open points>"`, then `status <id> review`. Do not set `done` (the person does after review).
+4. If you need the person's input, `log` that first, run `status <id> waiting`, then ask. Set `doing` again when you resume.
+5. When finished, write `summary <id> "<what was done, results, open points>"`, then `status <id> waiting`. Do not set `done` (the person does after review).

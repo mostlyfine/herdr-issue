@@ -14,7 +14,7 @@ async function git(cwd, args) {
 function task(issue) {
   return `Use the herdr-issues skill to work on issue #${issue.id} (${issue.file}). ` +
     `Read the file and do what "## Description" says. Log each milestone, and check off each acceptance criterion once you have verified it. ` +
-    `When finished, write a summary with \`issues.sh summary\` and set the status to review.`;
+    `When finished, write a summary with \`issues.sh summary\` and set the status to waiting.`;
 }
 
 function locate(meta) {

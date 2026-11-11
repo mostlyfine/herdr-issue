@@ -20,7 +20,7 @@ async function seed() {
   await store.create({ title: "A", repository: "/src/a", body: BODY });
   await store.create({ title: "", repository: "", body: "" });
   await store.create({ title: "C", repository: "/src/c", body: BODY });
-  await store.update(3, (m, b) => ({ meta: { ...m, status: "review", space: "work", branch: "issue/3", model: "opus", workspace: "w" }, body: b }));
+  await store.update(3, (m, b) => ({ meta: { ...m, status: "waiting", space: "work", branch: "issue/3", model: "opus", workspace: "w" }, body: b }));
 }
 
 // Runs fail at `git rev-parse`, so a started run shows up as a notification.
@@ -113,12 +113,12 @@ describe("Board", () => {
     let els = render();
     on(els, "card-1", "on_mouse_down:left")();
     on(els, "col-todo", "on_mouse_move")({}, cx);
-    on(els, "col-review", "on_mouse_move")({}, cx);
-    on(els, "col-review", "on_mouse_move")({}, cx);
+    on(els, "col-waiting", "on_mouse_move")({}, cx);
+    on(els, "col-waiting", "on_mouse_move")({}, cx);
     els = render();
-    on(els, "col-review", "on_mouse_up:left")({}, cx);
+    on(els, "col-waiting", "on_mouse_up:left")({}, cx);
     await flush();
-    expect((await store.get(1)).meta.status).toBe("review");
+    expect((await store.get(1)).meta.status).toBe("waiting");
     expect(v.view.sel).toBe(1);
 
     els = render();

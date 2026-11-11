@@ -98,10 +98,10 @@ describe("edits", () => {
     fs.writeFileSync(`${dir}/1.md`, file(1).replace(`done_at: ${at}`, "done_at: 2000-01-01 00:00"));
     sh("status", "1", "done", "still done");
     expect(meta(1, "done_at")).toBe("2000-01-01 00:00");
-    sh("status", "1", "review");
+    sh("status", "1", "waiting");
     expect(meta(1, "done_at")).toBeUndefined();
-    expect(meta(1, "status")).toBe("review");
-    expect(file(1)).toMatch(/status → done\n- .* still done\n- .* status → review\n$/);
+    expect(meta(1, "status")).toBe("waiting");
+    expect(file(1)).toMatch(/status → done\n- .* still done\n- .* status → waiting\n$/);
     expect(sh("status", "1", "nope").err).toContain("status must be one of");
   });
 

@@ -23,7 +23,7 @@ An issue kanban in the right panel, opened from an Issues tab next to Files and 
   1. If its space / tab is already open, just focus it.
   2. Resolve `repository` with `git rev-parse --show-toplevel` and create a worktree on branch `issue/<id>-<slug>` at `worktree` (empty: `~/.herdr/worktrees/<repo>/<slug>`). An existing worktree is reused.
   3. If `workspace` names an existing space, `tab.new` there; otherwise `space.new` (named workspace or `#id title`). argv is `agent` (`claude`, `codex` or `copilot`; empty: `claude`; anything else fails the run), plus `--model <model>` when set.
-  4. The task tells the agent to use the herdr-issues skill: do `## Description`, log milestones, check off verified criteria, write a summary, set status to waiting.
+  4. The task tells the agent to use the herdr-issues skill: do `## Description`, log milestones, check off verified criteria, write a summary, set status to done (waiting with the condition to resume when blocked on someone else).
   5. Write status=doing, branch, worktree, space, tab to the frontmatter and log "Run started". On failure, notify and log "Run failed".
 - `issues.<cmd>`: the board takes `run-<id>` from `nextCommand()`, so `herdr-app do issues.run-3` (what `issues.sh run 3` calls) runs issue 3.
 - The folder is watched with `watchFolder`, so changes from the skill redraw at once. A 10-minute timer redraws for the 24h cutoff.

@@ -66,7 +66,7 @@ On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree`
 
 Write `## Acceptance criteria` as a checkbox list (`- [ ] ...`). When creating an issue, derive verifiable criteria from the description.
 
-Status: `todo` not started, `doing` in progress, `waiting` waiting on someone else's action (a review, an answer, another task), `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).
+Status: `todo` not started, `doing` in progress, `waiting` blocked on someone else's action (a review, an answer, another task), `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).
 
 ## When started from the kanban
 
@@ -75,5 +75,5 @@ The first message gives the issue number and file path. Work in this order:
 1. Read it with `show <id>`. The current directory is a git worktree dedicated to this issue.
 2. At each milestone (investigation, decision, implementation, tests) record one line with `log <id> "<what you did and the result>"`.
 3. Each time an acceptance criterion is met, run `check <id> <n>`. Never check one you have not verified.
-4. If you need the person's input, `log` that first, run `status <id> waiting`, then ask. Set `doing` again when you resume.
-5. When finished, write `summary <id> "<what was done, results, open points>"`, then `status <id> waiting`. Do not set `done` (the person does after review).
+4. If you are blocked on someone else (an answer, a review, another task), run `status <id> waiting "<condition to resume>"`, then ask. Set `doing` again when you resume.
+5. When finished, write `summary <id> "<what was done, results, open points>"`, then `status <id> done`.

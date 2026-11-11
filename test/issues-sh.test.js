@@ -22,9 +22,9 @@ beforeEach(() => {
 describe("new / list / show / path", () => {
   test("creates numbered files with the template", () => {
     expect(sh("list")).toEqual({ code: 0, out: "", err: "" });
-    const a = sh("new", "First", "/src/a", "ws", "opus", "/wt");
+    const a = sh("new", "First", "/src/a", "ws", "opus", "/wt", "codex");
     expect(a.out.trim()).toBe(`${dir}/1.md`);
-    expect(file(1)).toMatch(/^---\nid: 1\ntitle: First\nstatus: todo\nworkspace: ws\nrepository: \/src\/a\nmodel: opus\nworktree: \/wt\n/);
+    expect(file(1)).toMatch(/^---\nid: 1\ntitle: First\nstatus: todo\nworkspace: ws\nrepository: \/src\/a\nagent: codex\nmodel: opus\nworktree: \/wt\n/);
     expect(file(1)).toContain("## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n");
     sh("new", "Second");
     expect(meta(2, "repository")).toBe(process.cwd());
@@ -53,6 +53,8 @@ describe("edits", () => {
   test("set", () => {
     sh("set", "1", "model", "sonnet");
     expect(meta(1, "model")).toBe("sonnet");
+    sh("set", "1", "agent", "copilot");
+    expect(meta(1, "agent")).toBe("copilot");
     sh("set", "1", "workspace", "");
     expect(meta(1, "workspace")).toBe("");
     expect(sh("set", "1", "status", "x").err).toContain("set accepts");

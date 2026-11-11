@@ -140,6 +140,29 @@ describe("runIssue", () => {
     expect(H.runs[0][1].name).toBe("newspace");
   });
 
+  test("agent picks the program; model is passed the same way", async () => {
+    git();
+    await store.create({ title: "A", repository: "/src/repo", body: BODY });
+    await store.update(1, (m, b) => ({ meta: { ...m, agent: "codex", model: "gpt-5" }, body: b }));
+    await runIssue(1);
+    expect(H.runs[0][1].argv).toEqual(["codex", "--model", "gpt-5"]);
+    expect(await lastLog(1)).toMatch(/, agent codex, model gpt-5\)$/);
+    await store.create({ title: "B", repository: "/src/repo", body: BODY });
+    await store.update(2, (m, b) => ({ meta: { ...m, agent: "copilot" }, body: b }));
+    await runIssue(2);
+    expect(H.runs[1][1].argv).toEqual(["copilot"]);
+  });
+
+  test("unknown agent is not started", async () => {
+    git();
+    await store.create({ title: "A", repository: "/src/repo", body: BODY });
+    await store.update(1, (m, b) => ({ meta: { ...m, agent: "rm" }, body: b }));
+    await runIssue(1);
+    expect(H.runs).toEqual([]);
+    expect((await store.get(1)).meta.status).toBe("todo");
+    expect(await lastLog(1)).toMatch(/Run failed: unknown agent: rm$/);
+  });
+
   test("non-Error failures are reported as text", async () => {
     H.exec = () => { throw "plain"; };
     await store.create({ title: "A", repository: "/src/repo", body: BODY });

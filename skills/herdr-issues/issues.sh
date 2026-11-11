@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] | set <id> <workspace|repository|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|review|done> [note] | log <id> <text> | summary <id> <text> | run <id>
+# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|review|done> [note] | log <id> <text> | summary <id> <text> | run <id>
 set -euo pipefail
 
 dir="${ISSUES_DIR:-${HERDR_APP_HOME:-$HOME/.config/herdr-app}/data/issues}"
@@ -49,7 +49,7 @@ case "$cmd" in
     id=$(( $(ls "$dir" | sed -n 's/^\([0-9][0-9]*\)\.md$/\1/p' | sort -n | tail -1 || true) + 1 ))
     t="$(now)"
     { printf -- '---\nid: %s\ntitle: %s\nstatus: todo\n' "$id" "$1"
-      printf 'workspace: %s\nrepository: %s\nmodel: %s\nworktree: %s\n' "${3:-}" "${2:-$PWD}" "${4:-}" "${5:-}"
+      printf 'workspace: %s\nrepository: %s\nagent: %s\nmodel: %s\nworktree: %s\n' "${3:-}" "${2:-$PWD}" "${6:-}" "${4:-}" "${5:-}"
       printf 'created: %s\nupdated: %s\n---\n## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n' "$t" "$t"; } > "$dir/$id.md"
     echo "$dir/$id.md" ;;
   status)
@@ -62,7 +62,7 @@ case "$cmd" in
     append_log "$f" "${3:-status → $s}" ;;
   set)
     f="$(file_of "${1:-}")"
-    case "${2:-}" in workspace|repository|model|worktree|title) ;; *) die "set accepts workspace|repository|model|worktree|title: ${2:-}" ;; esac
+    case "${2:-}" in workspace|repository|agent|model|worktree|title) ;; *) die "set accepts workspace|repository|agent|model|worktree|title: ${2:-}" ;; esac
     set_meta "$f" "$2" "${3:-}"; set_meta "$f" updated "$(now)" ;;
   check)
     f="$(file_of "${1:-}")"; [[ "${2:-}" =~ ^[0-9]+$ ]] || die "give the acceptance criterion number (from 1)"

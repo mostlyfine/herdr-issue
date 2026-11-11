@@ -10,9 +10,9 @@ beforeEach(() => H.reset(tempHome()));
 describe("parse / serialize", () => {
   test("round trip keeps known keys in order, always writes settings, keeps unknown keys", () => {
     const text = store.serialize({ title: "T", id: 3, extra: "x", branch: "" }, "body\n");
-    expect(text).toBe("---\nid: 3\ntitle: T\nworkspace: \nrepository: \nmodel: \nworktree: \nextra: x\n---\nbody\n");
+    expect(text).toBe("---\nid: 3\ntitle: T\nworkspace: \nrepository: \nagent: \nmodel: \nworktree: \nextra: x\n---\nbody\n");
     const { meta, body } = store.parse(text);
-    expect(meta).toEqual({ id: "3", title: "T", workspace: "", repository: "", model: "", worktree: "", extra: "x" });
+    expect(meta).toEqual({ id: "3", title: "T", workspace: "", repository: "", agent: "", model: "", worktree: "", extra: "x" });
     expect(body).toBe("body\n");
   });
 

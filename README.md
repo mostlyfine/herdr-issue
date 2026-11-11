@@ -1,6 +1,6 @@
 # herdr-app issues mod
 
-An issue kanban for herdr-app, opened from an Issues tab next to Files and Changes. Issues are markdown files; running one from the board starts claude in a git worktree made for that issue, and claude works through it. claude uses the bundled Claude Code skill `herdr-issues` to write its log, a summary and the status back to the issue.
+An issue kanban for herdr-app, opened from an Issues tab next to Files and Changes. Issues are markdown files; running one from the board starts an agent (claude, codex or copilot) in a git worktree made for that issue, and the agent works through it. The agent uses the bundled skill `herdr-issues` to write its log, a summary and the status back to the issue.
 
 ![Issues](preview.png)
 
@@ -9,15 +9,15 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 - A kanban with four columns: Todo / Doing / Review / Done
 - Add, edit and delete issues; drag and drop to change status
 - Left click shows the body as a markdown preview
-- Run from the right-click menu. While an agent is running, "Go to pane" focuses its pane
-- When finished, claude writes a `## Summary` into the issue
+- Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card focuses its pane
+- When finished, the agent writes a `## Summary` into the issue
 - Issues done for more than 24 hours are hidden (the file stays)
 
 ## Requirements
 
 - herdr-app
 - git
-- [Claude Code](https://claude.com/claude-code) (the `claude` command)
+- One of [Claude Code](https://claude.com/claude-code) (`claude`), [Codex CLI](https://github.com/openai/codex) (`codex`) or [GitHub Copilot CLI](https://github.com/github/copilot-cli) (`copilot`)
 
 ## Install
 
@@ -31,7 +31,7 @@ cd herdr-app-mods
 ./install.sh
 ```
 
-`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders). It also copies `mods/tabs-issues` (a clone of the tab bar with an Issues button next to Files and Changes) and `layouts/main-issues.json` (the layout that puts Issues in the right panel; it uses `agents-ws` / `pane-ws` when installed, otherwise the default `agents` / `pane`), and symlinks the skill to `~/.claude/skills/herdr-issues`. Run it again after editing the mod. If you install the skill with one of the methods below instead, remove `~/.claude/skills/herdr-issues` so the skill isn't loaded twice.
+`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders). It also copies `mods/tabs-issues` (a clone of the tab bar with an Issues button next to Files and Changes) and `layouts/main-issues.json` (the layout that puts Issues in the right panel; it uses `agents-ws` / `pane-ws` when installed, otherwise the default `agents` / `pane`), and symlinks the skill to `~/.claude/skills/herdr-issues` (Claude Code) and `~/.agents/skills/herdr-issues` (Codex, Copilot CLI). Run it again after editing the mod. If you install the skill with one of the methods below instead, remove those links so the skill isn't loaded twice.
 
 ### Skill: Claude Code plugin
 
@@ -84,6 +84,7 @@ title: Fix login form validation
 status: todo
 workspace: backend
 repository: /path/to/repo
+agent: claude
 model: opus
 worktree:
 created: 2026-11-10 10:00
@@ -96,7 +97,7 @@ What to do
 - [ ] `make test` passes
 
 ## Summary
-Written by claude when it finishes.
+Written by the agent when it finishes.
 
 ## Log
 ```
@@ -105,7 +106,8 @@ Written by claude when it finishes.
 | --- | --- |
 | `workspace` | herdr space to run in. An existing space gets a new tab; otherwise a space with that name is created. Empty: `#<id> <title>` |
 | `repository` | git repository to create the worktree from |
-| `model` | Model passed to `claude --model` |
+| `agent` | `claude`, `codex` or `copilot`. Empty: `claude` |
+| `model` | Model passed to the agent as `--model` |
 | `worktree` | Worktree path. Empty: created at `~/.herdr/worktrees/<repo>/<branch>` |
 
 `branch`, `space`, `tab` and `done_at` are written automatically on run and status changes.
@@ -113,8 +115,8 @@ Written by claude when it finishes.
 ### What a run does
 
 1. Creates a worktree on branch `issue/<id>-<title>` in `repository` (reuses it if it exists).
-2. Starts claude in the `workspace` space or tab and asks it to work on the issue.
-3. claude logs milestones with the `herdr-issues` skill, checks off acceptance criteria it has verified, writes a summary, and sets the status to `review`.
+2. Starts the agent in the `workspace` space or tab and asks it to work on the issue.
+3. The agent logs milestones with the `herdr-issues` skill, checks off acceptance criteria it has verified, writes a summary, and sets the status to `review`.
 4. After reviewing, move the issue to Done.
 
 ### Skill
@@ -134,8 +136,8 @@ $S run 3        # same as Run on the board (herdr-app must be running)
 
 ## Notes
 
-- Running an issue executes `git` and `claude` and creates worktrees under `~/.herdr/worktrees/`.
-- In a new worktree, claude may ask whether to trust the folder when it starts.
+- Running an issue executes `git` and the agent (`claude` / `codex` / `copilot`) and creates worktrees under `~/.herdr/worktrees/`.
+- In a new worktree, the agent may ask whether to trust the folder when it starts.
 
 ## Development
 

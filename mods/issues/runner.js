@@ -1,6 +1,8 @@
 import { exec, home, run, spaces, agents, notify } from "herdr";
 import * as store from "./store.js";
 
+const AGENTS = ["claude", "codex", "copilot"];
+
 // Same checkout location and slug rule as the shipped worktree mod.
 const slug = (s) => s.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -42,6 +44,8 @@ export async function runIssue(id) {
   const { meta } = issue;
   if (focusIssue(meta)) return;
   try {
+    const agent = meta.agent || "claude";
+    if (!AGENTS.includes(agent)) throw new Error(`unknown agent: ${agent}`);
     const repoPath = store.repoOf(meta);
     if (!repoPath) throw new Error("repository is not set");
     const top = await git(repoPath, ["rev-parse", "--show-toplevel"]);
@@ -56,14 +60,14 @@ export async function runIssue(id) {
       if (!add.ok) throw new Error(add.err || "git worktree add failed");
     }
     const name = `#${issue.id} ${meta.title ?? ""}`.trim();
-    const argv = meta.model ? ["claude", "--model", meta.model] : ["claude"];
+    const argv = meta.model ? [agent, "--model", meta.model] : [agent];
     // workspace: an existing space gets a new tab; an unknown name becomes a new space.
     const target = meta.workspace && spaces().find((s) => s.name === meta.workspace);
     const space = meta.workspace || name;
     const tab = target ? name : undefined;
     const { repo: _old, ...rest } = meta;
     await store.save(issue, { ...rest, repository: rest.repository || repoPath, status: "doing", branch, worktree: path, space, tab },
-      store.appendLog(issue.body, `Run started (space ${space}${tab ? ` / tab ${tab}` : ""}, branch ${branch}${meta.model ? `, model ${meta.model}` : ""})`));
+      store.appendLog(issue.body, `Run started (space ${space}${tab ? ` / tab ${tab}` : ""}, branch ${branch}${agent !== "claude" ? `, agent ${agent}` : ""}${meta.model ? `, model ${meta.model}` : ""})`));
     if (target) run("tab.new", { space: target.id, name, folder: path, argv, task: task(issue) });
     else run("space.new", { name: space, folder: path, argv, task: task(issue) });
   } catch (e) {

@@ -1,6 +1,6 @@
 ---
 name: herdr-issues
-description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, write a summary, update status (todo/doing/review/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". claude started from the kanban records its progress with this skill.
+description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, write a summary, update status (todo/doing/review/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". The agent (claude / codex / copilot) started from the kanban records its progress with this skill.
 ---
 
 # herdr-issues
@@ -16,13 +16,13 @@ S="bash <base directory of this skill>/issues.sh"   # issues.sh sits next to thi
 $S list                          # id, status, title, repository (tab separated)
 $S show <id>                     # print the issue
 $S path <id>                     # absolute path of the file
-$S new "<title>" [repository] [workspace] [model] [worktree]  # create (repository defaults to cwd); prints the path
-$S set <id> <workspace|repository|model|worktree|title> "<value>"  # change a setting ("" clears it)
+$S new "<title>" [repository] [workspace] [model] [worktree] [agent]  # create (repository defaults to cwd); prints the path
+$S set <id> <workspace|repository|agent|model|worktree|title> "<value>"  # change a setting ("" clears it)
 $S check <id> <n>                # check off acceptance criterion n (from 1) and log it
 $S summary <id> "<text>"         # write (replace) the ## Summary section and log it
 $S status <id> <status> [note]   # change status and log it
 $S log <id> "<text>"             # append one line to the log
-$S run <id>                      # run it like the kanban does (herdr-app must be running): worktree → claude
+$S run <id>                      # run it like the kanban does (herdr-app must be running): worktree → agent
 ```
 
 Edit the file directly (path from `path`) only to extend `## Description`. Never hand-edit the frontmatter, `## Summary` or `## Log`; use the commands so `updated` and the log format stay right.
@@ -36,7 +36,8 @@ title: Fix login form validation
 status: todo
 workspace: backend        # optional: herdr space to run in
 repository: /path/to/repo # repository the worktree is created from
-model: opus               # optional: passed to claude --model
+agent: claude             # optional: claude | codex | copilot (empty: claude)
+model: opus               # optional: passed to the agent as --model
 branch: issue/12-...      # set by the kanban on run
 worktree: /path/to/worktree  # optional: empty → ~/.herdr/worktrees/<repo>/<branch>, set on run
 space: #12 ...            # herdr space used for the run
@@ -59,9 +60,9 @@ What was done, results, open points
 - 2026-11-10 10:05 Run started (branch issue/12-...)
 ```
 
-workspace / repository / model / worktree are not in the kanban form; set them in the frontmatter (keys stay even when empty).
+workspace / repository / agent / model / worktree are not in the kanban form; set them in the frontmatter (keys stay even when empty).
 
-On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree` is used; an existing worktree is reused). If `workspace` names an existing space a tab is added there, otherwise a space with that name is created, or `#<id> <title>` when empty. With `model`, claude starts as `claude --model <model>`. A legacy `repo:` key is read as repository.
+On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree` is used; an existing worktree is reused). If `workspace` names an existing space a tab is added there, otherwise a space with that name is created, or `#<id> <title>` when empty. The program is `agent` (claude when empty); with `model` it starts as `<agent> --model <model>`. A legacy `repo:` key is read as repository.
 
 Write `## Acceptance criteria` as a checkbox list (`- [ ] ...`). When creating an issue, derive verifiable criteria from the description.
 

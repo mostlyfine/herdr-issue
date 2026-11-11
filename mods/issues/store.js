@@ -3,10 +3,10 @@ import { appHome, readTextFile, writeTextFile } from "herdr";
 
 export const STATUSES = ["todo", "doing", "review", "done"];
 export const LABELS = { todo: "Todo", doing: "Doing", review: "Review", done: "Done" };
-const KEYS = ["id", "title", "status", "workspace", "repository", "model", "branch", "worktree", "space", "tab", "created", "updated", "done_at"];
+const KEYS = ["id", "title", "status", "workspace", "repository", "agent", "model", "branch", "worktree", "space", "tab", "created", "updated", "done_at"];
 
 // Settings people fill in the file; written even when empty so they're there to edit.
-const ALWAYS = ["workspace", "repository", "model", "worktree"];
+const ALWAYS = ["workspace", "repository", "agent", "model", "worktree"];
 
 // `repo` is the older name of `repository`.
 export const repoOf = (meta) => meta.repository || meta.repo || "";

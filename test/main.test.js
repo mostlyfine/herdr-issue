@@ -154,6 +154,20 @@ describe("Board", () => {
     expect(H.overlays.map((o) => o.height)).toEqual([250, 282]);
   });
 
+  test("cards with a running agent get a pane button that focuses it without starting a drag", async () => {
+    await seed();
+    H.spaces = [{ id: "s1", name: "work", tabs: [] }];
+    H.agents = [{ space: "s1", pane: "p" }];
+    const { v, cx, render } = mount();
+    await flush();
+    const els = render();
+    expect(els["pane-1"]).toBeUndefined();
+    on(els, "pane-3", "on_mouse_down:left")({}, cx);
+    expect(H.runs).toContainEqual(["pane.focus", { pane: "p" }]);
+    expect(v.view.pressed).toBeUndefined();
+    expect(cx.stopped).toBeGreaterThan(0);
+  });
+
   test("+ opens the new issue dialog", () => {
     const { render } = mount();
     on(render(), "issues-add", "on_click")();

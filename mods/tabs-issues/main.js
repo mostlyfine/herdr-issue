@@ -17,6 +17,15 @@ function find(node, id) {
   return null;
 }
 
+function paneFrame(node) {
+  if (node?.content?.tab && node.content.pane) return node.content.pane;
+  for (const child of node?.children ?? []) {
+    const found = paneFrame(child);
+    if (found) return found;
+  }
+  return null;
+}
+
 export default class Tabs extends View {
   init() {
     this.pressed = null;
@@ -52,9 +61,25 @@ export default class Tabs extends View {
     localStorage.setItem("panels", JSON.stringify(this.panels));
   }
 
+  // Pane frames take the shown space's color.
+  syncBorder(t, space) {
+    if (!space) return;
+    const color = spaceColor(t, space.id);
+    const tree = layout();
+    const frame = paneFrame(tree);
+    if (!frame || (frame.border?.color === color && frame.focus?.color === color) || this.border === color) return;
+    this.border = color;
+    const next = JSON.parse(JSON.stringify(tree));
+    const pane = paneFrame(next);
+    pane.border = { ...pane.border, width: pane.border?.width ?? 1, color };
+    pane.focus = { ...pane.focus, width: pane.focus?.width ?? 1, color };
+    run("layout.set", { layout: next });
+  }
+
   render() {
     const t = theme();
     const space = spaces().find(p => p.active);
+    this.syncBorder(t, space);
     const shown = space?.tabs ?? [];
     const active = shown.findIndex(tab => tab.active);
     const selected = shown[active]?.id;

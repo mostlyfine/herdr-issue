@@ -1,0 +1,11 @@
+{
+  "name": "herdr-app-issues",
+  "owner": { "name": "herdr-app-issues" },
+  "plugins": [
+    {
+      "name": "herdr-issues",
+      "source": "./",
+      "description": "Operate the herdr-app issue kanban: create issues, log work, write summaries, update status and run issues."
+    }
+  ]
+}

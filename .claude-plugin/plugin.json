@@ -1,0 +1,7 @@
+{
+  "name": "herdr-issues",
+  "version": "0.1.0",
+  "description": "Operate the herdr-app issue kanban: create issues, log work, write summaries, update status and run issues.",
+  "license": "MIT",
+  "keywords": ["herdr", "kanban", "issues"]
+}

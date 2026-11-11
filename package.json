@@ -1,0 +1,7 @@
+{
+  "name": "herdr-app-issues",
+  "private": true,
+  "scripts": {
+    "test": "bun test --coverage"
+  }
+}

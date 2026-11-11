@@ -1,0 +1,5 @@
+[test]
+preload = ["./test/fakes.js"]
+coverageSkipTestFiles = true
+coverageThreshold = 0.9
+coveragePathIgnorePatterns = ["test/**"]

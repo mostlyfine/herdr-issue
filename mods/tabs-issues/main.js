@@ -65,9 +65,10 @@ export default class Tabs extends View {
   syncBorder(t, space) {
     if (!space) return;
     const color = spaceColor(t, space.id);
+    if (this.border === color) return;
     const tree = layout();
     const frame = paneFrame(tree);
-    if (!frame || (frame.border?.color === color && frame.focus?.color === color) || this.border === color) return;
+    if (!frame || (frame.border?.color === color && frame.focus?.color === color)) return;
     this.border = color;
     const next = JSON.parse(JSON.stringify(tree));
     const pane = paneFrame(next);

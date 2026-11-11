@@ -105,6 +105,7 @@ class Board {
     const goals = store.criteria(i.body);
     const done = goals.filter((g) => g.done).length;
     const pane = hasAgent(i.meta);
+    const info = [i.meta.workspace, repo, i.meta.agent, i.meta.model, i.meta.branch].filter(Boolean).join(" · ");
     return v_flex().id(`card-${i.id}`).gap(3).p(8).rounded(7).border_1()
       .border_color(edge ?? (this.sel === i.id ? t.accent : t.border)).bg(edge && this.sel === i.id ? t.selected : t.background).cursor_pointer()
       .when(this.pressed === i.id && this.over !== (i.meta.status ?? "todo"), (el) => el.opacity(0.5))
@@ -116,9 +117,9 @@ class Board {
         .child(div().flex_1().min_w(0).truncate().text_size(12.5).text_color(t.foreground).child(i.meta.title || "(untitled)"))
         .when(goals.length > 0, (el) => el.child(div().text_size(11).text_color(done === goals.length ? t.done : t.dim).child(`☑ ${done}/${goals.length}`)))
         .when(Boolean(dot), (el) => el.child(div().w(8).h(8).rounded(4).bg(dot))))
-      .when(Boolean(repo || i.meta.branch || i.meta.workspace || i.meta.agent || i.meta.model || pane), (el) => el.child(h_flex().gap(6).items_center()
+      .when(Boolean(info) || pane, (el) => el.child(h_flex().gap(6).items_center()
         .child(div().flex_1().min_w(0).truncate().text_size(11).text_color(t.muted)
-          .child([i.meta.workspace, repo, i.meta.agent, i.meta.model, i.meta.branch].filter(Boolean).join(" · ")))
+          .child(info))
         // A press, not on_click: stopping it keeps the card from starting a drag.
         .when(pane, (row) => row.child(div().id(`pane-${i.id}`).flex_none().px(5).rounded(4).border_1().border_color(t.border)
           .text_size(10.5).text_color(t.muted).cursor_pointer().hover((s) => s.bg(t.hover).text_color(t.foreground))

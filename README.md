@@ -1,6 +1,6 @@
 # herdr-app issues mod
 
-An issue kanban for the right side of herdr-app. Issues are markdown files; running one from the board starts claude in a git worktree made for that issue, and claude works through it. claude uses the bundled Claude Code skill `herdr-issues` to write its log, a summary and the status back to the issue.
+An issue kanban for herdr-app, opened from an Issues tab next to Files and Changes. Issues are markdown files; running one from the board starts claude in a git worktree made for that issue, and claude works through it. claude uses the bundled Claude Code skill `herdr-issues` to write its log, a summary and the status back to the issue.
 
 ![Issues](preview.png)
 
@@ -31,7 +31,7 @@ cd herdr-app-mods
 ./install.sh
 ```
 
-`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders) and also symlinks the skill to `~/.claude/skills/herdr-issues`. Run it again after editing the mod. If you install the skill with one of the methods below instead, remove `~/.claude/skills/herdr-issues` so the skill isn't loaded twice.
+`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders). It also copies `mods/tabs-issues` (a clone of the tab bar with an Issues button next to Files and Changes) and `layouts/main-issues.json` (the layout that puts Issues in the right panel), and symlinks the skill to `~/.claude/skills/herdr-issues`. Run it again after editing the mod. If you install the skill with one of the methods below instead, remove `~/.claude/skills/herdr-issues` so the skill isn't loaded twice.
 
 ### Skill: Claude Code plugin
 
@@ -59,12 +59,6 @@ npx skills add <owner>/<repo> --skill herdr-issues -a claude-code -g
 ```
 
 `-g` installs it for your user instead of the current project; `-a claude-code` targets Claude Code.
-
-If the board doesn't appear on the right, add this block at the end of the root `children` of your layout (`~/.config/herdr-app/layouts/<name>.json`):
-
-```json
-{ "id": "issues", "type": "block", "size": { "px": 340 }, "min": 200, "max": 600, "content": { "mod": "issues" } }
-```
 
 ## Usage
 

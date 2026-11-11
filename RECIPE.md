@@ -1,12 +1,12 @@
 # Issues
 
-An issue kanban for the right side of the window. Each issue is one markdown file with frontmatter; issues can be added, edited, deleted and moved between statuses, and "Run" starts claude in a git worktree made for the issue so it works through it. claude writes its log, a summary and the status back to the file with the bundled `herdr-issues` skill, and the board updates immediately.
+An issue kanban in the right panel, opened from an Issues tab next to Files and Changes. Each issue is one markdown file with frontmatter; issues can be added, edited, deleted and moved between statuses, and "Run" starts claude in a git worktree made for the issue so it works through it. claude writes its log, a summary and the status back to the file with the bundled `herdr-issues` skill, and the board updates immediately.
 
 ![Issues](preview.png)
 
 ## What you see
 
-- A tall panel 340px wide (min 200 / max 600) on `theme().chrome`.
+- A page in the right panel stack next to Files and Changes, on `theme().chrome`. `tabs-issues` (a clone of the tab bar) adds the Issues button.
 - A 34px header: "Issues" on the left (13px, semibold), "+" (new issue) on the right.
 - Below it four stacked columns: Todo / Doing / Review / Done. Each heading shows the column name and count (11.5px, `dim`).
 - Cards: radius 7, `background` fill. The border takes the color of the space the issue ran in (the same `space.colors` palette as the shipped spaces mod); without one it is `border`, or `accent` when selected (a selected colored card gets the `selected` fill instead). Line 1: `#id` (dim), title (12.5px, truncated), `☑ done/total` when there are acceptance criteria (`done` color when all are met), and an 8px dot in the space's status color. Line 2: workspace · repository name · model · branch (11px, muted).
@@ -30,7 +30,7 @@ An issue kanban for the right side of the window. Each issue is one markdown fil
 
 ## Built from
 
-- `mods/issues/mod.json`: `{ "place": "right", "size": 340, "focusable": true }`.
+- `mods/issues/mod.json`: `{ "place": "none", "focusable": true }`. `layouts/main-issues.json` puts it in the `panel-body` stack..
 - `mods/issues/main.js`: one mod with four views chosen by props. No props = Board, `{view:"edit", id?}` = edit dialog, `{view:"view", id}` = preview dialog, `{view:"menu", id, confirm}` = popup menu. Uses `openOverlay` / `closeOverlay`, `shared("space.colors")`, `TextView.markdown`, `InputState`+`Input`, `EditorState`+`Editor` (gpui-base).
 - `mods/issues/store.js`: saves to `appHome()/data/issues/<id>.md`. A small `key: value` frontmatter parser / writer, log append, acceptance-criteria reader, conflict detection through `writeTextFile`'s expected text. Frontmatter keys: id, title, status, workspace, repository, model, branch, worktree, space, tab, created, updated, done_at.
 - `mods/issues/runner.js`: `exec("git", …)`, `spaces()` / `agents()`, `run("space.new" | "tab.new" | "space.select" | "tab.select" | "pane.focus")`, `notify`.
@@ -40,7 +40,6 @@ An issue kanban for the right side of the window. Each issue is one markdown fil
 ## Watch out
 
 - herdr-app ignores symlinked mod folders. `install.sh` copies (run it again after edits).
-- A mod added while the app runs may not dock even with `place: right`. Then add `{"id":"issues","type":"block","size":{"px":340},"min":200,"max":600,"content":{"mod":"issues"}}` at the end of the layout root's children.
 - `on_click` on a card stops the mouse_down-based drag and drop. Detect a click in the column's `on_mouse_up` as "released over its own column".
 - `closeOverlay` cancels that copy's tasks. Menu actions finish inside `cx.spawn` before closing.
 - The skill is not part of the herdr-app package; without `~/.claude/skills/herdr-issues`, the started claude cannot write its log.

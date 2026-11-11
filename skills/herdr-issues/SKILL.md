@@ -5,7 +5,7 @@ description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues
 
 # herdr-issues
 
-Each issue is one markdown file at `~/.config/herdr-app/data/issues/<id>.md` (override with `ISSUES_DIR`). The issues kanban on the right of herdr-app watches this folder, so file changes show up immediately.
+Each issue is one markdown file at `~/.config/herdr-app/data/issues/<id>.md` (override with `ISSUES_DIR`). The Issues panel of herdr-app watches this folder, so file changes show up immediately.
 
 ## Always use issues.sh
 

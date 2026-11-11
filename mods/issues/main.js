@@ -1,4 +1,4 @@
-// One mod, three views: the board (docked right), and as overlays of itself
+// One mod, three views: the board (in the right panel), and as overlays of itself
 // props { view: "edit", id? } (add/edit dialog) and { view: "menu", id } (card menu).
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, EditorState, Editor, TextView } from "gpui-base";

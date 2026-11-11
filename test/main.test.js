@@ -168,6 +168,43 @@ describe("Board", () => {
     expect(cx.stopped).toBeGreaterThan(0);
   });
 
+  test("added and updated cards blink for a while; the first load does not", async () => {
+    await seed();
+    const { v, cx, render } = mount();
+    await flush();
+    expect(cx.timers).toEqual([]);
+    await store.create({ title: "New", repository: "", body: "" });
+    await store.update(1, (m, b) => ({ meta: { ...m, title: "A2" }, body: b }));
+    await v.view.reload(cx);
+    expect([...v.view.flash].sort()).toEqual([1, 4]);
+    const fades = [];
+    while (cx.timers.length) {
+      const els = render();
+      expect(els["card-4"].opacity).toBe(els["card-1"].opacity);
+      expect(els["card-2"].opacity).toBeUndefined();
+      fades.push(els["card-1"].opacity ?? 1);
+      cx.timers.shift()(cx);
+    }
+    // Fades out and back in gradually rather than switching on and off.
+    expect(Math.min(...fades)).toBeLessThan(0.4);
+    expect(Math.max(...fades.slice(1).map((o, n) => Math.abs(o - fades[n])))).toBeLessThan(0.2);
+    expect(render()["card-1"].opacity).toBeUndefined();
+    expect(v.view.flash.size).toBe(0);
+    await v.view.reload(cx);
+    expect(cx.timers).toEqual([]);
+  });
+
+  test("the selected card is outlined only while the board has focus", async () => {
+    await seed();
+    const { v, cx, render } = mount();
+    await flush();
+    v.view.sel = 1;
+    expect(render()["card-1"].border).toBe("c:border");
+    v.view.handle.focus();
+    expect(render()["card-1"].border).toBe("c:accent");
+    expect(render()["card-2"].border).toBe("c:border");
+  });
+
   test("+ opens the new issue dialog", () => {
     const { render } = mount();
     on(render(), "issues-add", "on_click")();

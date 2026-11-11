@@ -9,6 +9,7 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 - A kanban with four columns: Todo / Doing / Review / Done
 - Add, edit and delete issues; drag and drop to change status
 - Left click shows the body as a markdown preview
+- Added or updated cards flash for a moment
 - Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card focuses its pane
 - When finished, the agent writes a `## Summary` into the issue
 - Issues done for more than 24 hours are hidden (the file stays)

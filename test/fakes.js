@@ -53,6 +53,8 @@ function el() {
       if (k === "rec") return rec;
       if (k === "id") return (id) => { rec.id = id; H.els[id] = rec; return self; };
       if (k === "when") return (c, f) => (c ? f(self) : self);
+      if (k === "opacity") return (o) => { rec.opacity = o; return self; };
+      if (k === "border_color") return (c) => { rec.border = c; return self; };
       if (k === "hover") return (f) => { f(self); return self; };
       if (k === "child") return (c) => { if (typeof c === "string") { rec.texts.push(c); H.texts.push(c); } return self; };
       if (k === "on_mouse_down" || k === "on_mouse_up") return (b, f) => { rec.on[`${k}:${b}`] = f; return self; };
@@ -80,12 +82,12 @@ mock.module("gpui-base", () => ({
 
 export function makeCx() {
   const cx = {
-    notified: 0, stopped: 0, focused: 0, tasks: [],
+    notified: 0, stopped: 0, focused: 0, tasks: [], timers: [],
     notify() { cx.notified++; },
     stop_propagation() { cx.stopped++; },
     spawn(f) { const p = f(cx); cx.tasks.push(p); return p; },
-    focus_handle: () => ({ focus() { cx.focused++; } }),
-    timer: { every(_ms, f) { f(cx); } },
+    focus_handle: () => ({ focus() { cx.focused++; }, is_focused: () => cx.focused > 0 }),
+    timer: { every(_ms, f) { f(cx); }, after(_ms, f) { cx.timers.push(f); } },
   };
   return cx;
 }

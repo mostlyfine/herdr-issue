@@ -13,6 +13,8 @@ const spaceColor = (t, space) => {
   return c.startsWith("#") ? c : (MARK[c] ?? t[c]);
 };
 
+const FADE = { ms: 33, frames: 48, pulses: 2, min: 0.25 };
+
 const NEW_BODY = "## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n";
 
 const openEdit = (id) => openOverlay({ mod: "issues", props: { view: "edit", id }, kind: "dialog", modal: true, width: 640, height: 520 });
@@ -50,8 +52,32 @@ class Board {
   }
 
   async reload(cx) {
-    try { this.items = await store.list(); } catch (e) { this.error = String(e?.message ?? e); }
+    const prev = this.loaded ? new Map(this.items.map((i) => [i.id, i.raw])) : null;
+    try { this.items = await store.list(); this.loaded = true; } catch (e) { this.error = String(e?.message ?? e); }
+    const changed = prev ? this.items.filter((i) => prev.get(i.id) !== i.raw) : [];
+    if (changed.length) this.blink(changed.map((i) => i.id), cx);
     cx.notify();
+  }
+
+  // Added or changed cards fade out and back in twice.
+  blink(ids, cx) {
+    this.flash ??= new Set();
+    ids.forEach((id) => this.flash.add(id));
+    const running = this.frame !== undefined;
+    this.frame = 0;
+    if (!running) this.tick(cx);
+  }
+
+  tick(cx) {
+    if (this.frame >= FADE.frames) { this.flash.clear(); this.frame = undefined; }
+    else { this.frame++; cx.timer.after(FADE.ms, (cx) => this.tick(cx)); }
+    cx.notify();
+  }
+
+  fade(id) {
+    if (!this.flash?.has(id) || this.frame === undefined) return null;
+    const wave = (1 - Math.cos(2 * Math.PI * FADE.pulses * this.frame / FADE.frames)) / 2;
+    return 1 - (1 - FADE.min) * wave;
   }
 
   ordered() {
@@ -106,8 +132,11 @@ class Board {
     const done = goals.filter((g) => g.done).length;
     const pane = hasAgent(i.meta);
     const info = [i.meta.workspace, repo, i.meta.agent, i.meta.model, i.meta.branch].filter(Boolean).join(" · ");
+    const fade = this.fade(i.id);
+    const sel = this.sel === i.id && this.handle.is_focused();
     return v_flex().id(`card-${i.id}`).gap(3).p(8).rounded(7).border_1()
-      .border_color(edge ?? (this.sel === i.id ? t.accent : t.border)).bg(edge && this.sel === i.id ? t.selected : t.background).cursor_pointer()
+      .border_color(edge ?? (sel ? t.accent : t.border)).bg(edge && sel ? t.selected : t.background).cursor_pointer()
+      .when(fade !== null, (el) => el.opacity(fade))
       .when(this.pressed === i.id && this.over !== (i.meta.status ?? "todo"), (el) => el.opacity(0.5))
       .on_mouse_down("left", () => { this.pressed = i.id; this.over = i.meta.status ?? "todo"; })
       .hover((s) => s.bg(t.hover))

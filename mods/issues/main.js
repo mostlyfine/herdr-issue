@@ -95,8 +95,7 @@ class Board {
     if (!issue) return;
     // Released over its own column: a click (no on_click on cards, so presses can become drags).
     if ((issue.meta.status ?? "todo") !== s) task(cx, () => store.setStatus(issue.id, s));
-    else openView(issue.id);
-    this.sel = issue.id;
+    else { openView(issue.id); this.sel = issue.id; }
     cx.notify();
   }
 

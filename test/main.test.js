@@ -119,7 +119,7 @@ describe("Board", () => {
     on(els, "col-waiting", "on_mouse_up:left")({}, cx);
     await flush();
     expect((await store.get(1)).meta.status).toBe("waiting");
-    expect(v.view.sel).toBe(1);
+    expect(v.view.sel).toBeNull();
 
     els = render();
     on(els, "card-2", "on_mouse_down:left")();

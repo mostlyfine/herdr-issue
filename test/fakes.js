@@ -70,7 +70,7 @@ export class State {
   focus() { this.focused = true; }
 }
 
-mock.module("gpui-kit", () => ({ View: class {}, div: el }));
+mock.module("gpui-kit", () => ({ View: class {}, div: el, svg: el }));
 mock.module("gpui-base", () => ({
   v_flex: el, h_flex: el,
   InputState: State, EditorState: State,

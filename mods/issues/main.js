@@ -1,6 +1,6 @@
 // One mod, three views: the board (in the right panel), and as overlays of itself
 // props { view: "edit", id? } (add/edit dialog) and { view: "menu", id } (card menu).
-import { View, div } from "gpui-kit";
+import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, EditorState, Editor, TextView } from "gpui-base";
 import { props, theme, spaces, shared, openOverlay, closeOverlay, watchFolder, nextCommand, focused, notify } from "herdr";
 import * as store from "./store.js";
@@ -16,7 +16,7 @@ const spaceColor = (t, space) => {
 const NEW_BODY = "## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n";
 
 const openEdit = (id) => openOverlay({ mod: "issues", props: { view: "edit", id }, kind: "dialog", modal: true, width: 640, height: 520 });
-const openView = (id) => openOverlay({ mod: "issues", props: { view: "view", id }, kind: "dialog", modal: true, width: 640, height: 520 });
+const openView = (id) => openOverlay({ mod: "issues", props: { view: "view", id }, kind: "dialog", width: 640, height: 520 });
 const openMenu = (id, agent, confirm = false) => openOverlay({ mod: "issues", props: { view: "menu", id, confirm }, kind: "popup", width: 200, height: confirm ? 110 : agent ? 282 : 250 });
 const fail = (e) => notify({ title: "issues", body: String(e?.message ?? e), level: "error" });
 const task = (cx, fn) => cx.spawn(async () => { try { await fn(); } catch (e) { fail(e); } });
@@ -242,11 +242,13 @@ class Preview {
     const close = () => closeOverlay(p.overlay);
     return v_flex().id("issues-view").track_focus(this.handle).size_full().p(18).bg(t.popover).text_color(t.foreground)
       .on_key_down((e, cx) => { if (e.key === "escape") { close(); cx.stop_propagation(); } })
-      .child(div().text_size(15).font_semibold().child(`#${p.id} ${this.issue?.meta.title ?? ""}`))
+      .child(h_flex().gap(8).items_start()
+        .child(div().flex_1().min_w(0).text_size(15).font_semibold().child(`#${p.id} ${this.issue?.meta.title ?? ""}`))
+        .child(div().id("issues-close").flex_none().p(3).rounded(4).text_color(t.dim).cursor_pointer()
+          .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(close).child(svg("mods/pane/close.svg").size(14))))
       .child(div().id("issues-view-body").flex_1().min_h(0).mt(12).overflow_y_scrollbar().text_size(12.8)
         .child(TextView.markdown(`issues-md-${p.id}`, this.issue?.body ?? "")))
       .child(h_flex().pt(14).gap(8).justify_end()
-        .child(button(t, "issues-close", "Close", false, close))
         .child(button(t, "issues-run", "▶ Run", false, (_e, cx) => task(cx, async () => { try { await runIssue(p.id); } finally { close(); } })))
         .child(button(t, "issues-edit", "Edit", true, () => { closeOverlay(p.overlay); openEdit(p.id); })));
   }

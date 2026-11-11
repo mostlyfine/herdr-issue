@@ -31,7 +31,7 @@ cd herdr-app-mods
 ./install.sh
 ```
 
-`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders). It also copies `mods/tabs-issues` (a clone of the tab bar with an Issues button next to Files and Changes) and `layouts/main-issues.json` (the layout that puts Issues in the right panel), and symlinks the skill to `~/.claude/skills/herdr-issues`. Run it again after editing the mod. If you install the skill with one of the methods below instead, remove `~/.claude/skills/herdr-issues` so the skill isn't loaded twice.
+`install.sh` copies `mods/issues` to `~/.config/herdr-app/mods/issues` (herdr-app ignores symlinked mod folders). It also copies `mods/tabs-issues` (a clone of the tab bar with an Issues button next to Files and Changes) and `layouts/main-issues.json` (the layout that puts Issues in the right panel; it uses `agents-ws` / `pane-ws` when installed, otherwise the default `agents` / `pane`), and symlinks the skill to `~/.claude/skills/herdr-issues`. Run it again after editing the mod. If you install the skill with one of the methods below instead, remove `~/.claude/skills/herdr-issues` so the skill isn't loaded twice.
 
 ### Skill: Claude Code plugin
 

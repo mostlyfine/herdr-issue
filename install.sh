@@ -10,7 +10,11 @@ cp "$root"/mods/issues/*.js "$root"/mods/issues/mod.json "$app/mods/issues/"
 echo "copied $app/mods/issues"
 mkdir -p "$app/mods/tabs-issues" "$app/layouts"
 cp "$root"/mods/tabs-issues/* "$app/mods/tabs-issues/"
-cp "$root"/layouts/main-issues.json "$app/layouts/"
+layout="$(cat "$root/layouts/main-issues.json")"
+for m in agents-ws pane-ws; do
+  [ -d "$app/mods/$m" ] || { layout="${layout//\"mod\": \"$m\"/\"mod\": \"${m%-ws}\"}"; echo "$m not found: using ${m%-ws}"; }
+done
+printf '%s\n' "$layout" > "$app/layouts/main-issues.json"
 echo "copied $app/mods/tabs-issues and $app/layouts/main-issues.json"
 skill="$HOME/.claude/skills/herdr-issues"
 if [ -e "$skill" ] && [ ! -L "$skill" ]; then echo "skip: $skill already exists" >&2; else ln -sfn "$root/skills/herdr-issues" "$skill"; echo "linked $skill"; fi

@@ -374,4 +374,32 @@ describe("Preview", () => {
     expect(H.notes[0].title).toBe("Cannot run issue #1");
     expect(H.closed).toEqual(["p"]);
   });
+
+  test("frontmatter is folded until its header is clicked", async () => {
+    await seed();
+    const { cx, render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    let els = render();
+    expect(H.texts).toContain("▸ Frontmatter");
+    expect(H.texts.some((s) => s.startsWith("```yaml"))).toBe(false);
+    on(els, "issues-fm", "on_click")({}, cx);
+    els = render();
+    expect(H.texts).toContain("▾ Frontmatter");
+    const fm = H.texts.find((s) => s.startsWith("```yaml"));
+    expect(fm).toStartWith("```yaml\nid: 1\ntitle: A\nstatus: todo\n");
+    expect(fm).toContain("repository: /src/a\n");
+    on(els, "issues-fm", "on_click")({}, cx);
+    render();
+    expect(H.texts.some((s) => s.startsWith("```yaml"))).toBe(false);
+  });
+
+  test("a file without frontmatter has no fold", async () => {
+    await store.create({ title: "A", repository: "", body: BODY });
+    await Bun.write(store.fileOf(1), BODY);
+    const { render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    const els = render();
+    expect(els["issues-fm"]).toBeUndefined();
+    expect(H.texts).toContain(BODY);
+  });
 });

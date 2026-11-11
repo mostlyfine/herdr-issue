@@ -276,6 +276,7 @@ class Preview {
     const t = theme();
     const p = props();
     const close = () => closeOverlay(p.overlay);
+    const fm = this.issue && /^---\r?\n([\s\S]*?)\r?\n---/.exec(this.issue.raw)?.[1];
     return v_flex().id("issues-view").track_focus(this.handle).size_full().p(18).bg(t.popover).text_color(t.foreground)
       .on_key_down((e, cx) => { if (e.key === "escape") { close(); cx.stop_propagation(); } })
       .child(h_flex().gap(8).items_start()
@@ -283,6 +284,10 @@ class Preview {
         .child(div().id("issues-close").flex_none().p(3).rounded(4).text_color(t.dim).cursor_pointer()
           .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(close).child(svg("mods/pane/close.svg").size(14))))
       .child(div().id("issues-view-body").flex_1().min_h(0).mt(12).overflow_y_scrollbar().text_size(12.8)
+        .when(Boolean(fm), (el) => el
+          .child(div().id("issues-fm").mb(8).text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
+            .on_click((_e, cx) => { this.meta = !this.meta; cx.notify(); }).child(`${this.meta ? "▾" : "▸"} Frontmatter`))
+          .when(Boolean(this.meta), (el) => el.child(TextView.markdown(`issues-fm-${p.id}`, `\`\`\`yaml\n${fm}\n\`\`\``))))
         .child(TextView.markdown(`issues-md-${p.id}`, this.issue?.body ?? "")))
       .child(h_flex().pt(14).gap(8).justify_end()
         .child(button(t, "issues-run", "▶ Run", false, (_e, cx) => task(cx, async () => { try { await runIssue(p.id); } finally { close(); } })))

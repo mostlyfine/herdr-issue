@@ -14,7 +14,7 @@ An issue kanban in the right panel, opened from an Issues tab next to Files and 
 
 ## How it behaves
 
-- Left click: a markdown preview dialog (640×520) of the body, with an × close button at the top right and ▶ Run and Edit buttons; Esc or a click outside closes it.
+- Left click: a markdown preview dialog (640×520) of the body, with the frontmatter as a yaml code block folded under a "▸ Frontmatter" header until clicked, with an × close button at the top right and ▶ Run and Edit buttons; Esc or a click outside closes it.
 - Right click: a popup menu. While an agent is running for the issue, "Go to pane" comes first (selects its space / tab and focuses the agent's pane). Then ▶ Run, Edit, Move to each column, Delete (asks first).
 - Drag and drop: dropping a card on another column changes its status. The dragged card is half transparent; the target column gets an `accent` border.
 - Keys (when the panel has focus): j/k select, n new, e/enter edit, d delete, r run, [ / ] move to the previous / next column.

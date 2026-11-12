@@ -22,12 +22,12 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 
 ## Install
 
-Install the mod and the skill separately. Replace `<owner>/<repo>` with this repository.
+Install the mod and the skill separately.
 
 ### Mod
 
 ```sh
-git clone https://github.com/<owner>/<repo>.git herdr-app-mods
+git clone https://github.com/mostlyfine/herdr-issue.git herdr-app-mods
 cd herdr-app-mods
 ./install.sh
 ```
@@ -39,24 +39,24 @@ cd herdr-app-mods
 This repository is also a plugin marketplace (`.claude-plugin/marketplace.json`) holding the `herdr-issues` plugin. In Claude Code:
 
 ```
-/plugin marketplace add <owner>/<repo>
+/plugin marketplace add mostlyfine/herdr-issue
 /plugin install herdr-issues@herdr-app-mods
 ```
 
 On Claude Code 2.1.275 or later this works in one step:
 
 ```
-/plugin install herdr-issues --marketplace <owner>/<repo>
+/plugin install herdr-issues --marketplace mostlyfine/herdr-issue
 ```
 
-From a shell: `claude plugin marketplace add <owner>/<repo>` then `claude plugin install herdr-issues@herdr-app-mods`.
+From a shell: `claude plugin marketplace add mostlyfine/herdr-issue` then `claude plugin install herdr-issues@herdr-app-mods`.
 
 ### Skill: npx skills
 
 With [skills](https://github.com/vercel-labs/skills) (Node.js 22.20 or later):
 
 ```sh
-npx skills add <owner>/<repo> --skill herdr-issues -a claude-code -g
+npx skills add mostlyfine/herdr-issue --skill herdr-issues -a claude-code -g
 ```
 
 `-g` installs it for your user instead of the current project; `-a claude-code` targets Claude Code.

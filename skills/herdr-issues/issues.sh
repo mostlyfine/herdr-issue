@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|waiting|done> [note] | log <id> <text> | summary <id> <text> | run <id>
+# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|waiting|done> [note] | log <id> <text> | summary <id> <text (multi-line ok)> | run <id> | help
 set -euo pipefail
 
 dir="${ISSUES_DIR:-${HERDR_APP_HOME:-$HOME/.config/herdr-app}/data/issues}"
@@ -79,8 +79,8 @@ case "$cmd" in
     set_meta "$f" updated "$(now)"; append_log "$f" "$2" ;;
   summary)
     f="$(file_of "${1:-}")"; [ -n "${2:-}" ] || die "summary text is required"
-    awk -v s="$2" '
-      function put(){print "## Summary"; print s; print ""; done=1}
+    S="$2" awk '
+      function put(){print "## Summary"; print ENVIRON["S"]; print ""; done=1}
       $0=="## Summary"{skip=1; next}
       skip&&/^## /{skip=0}
       skip{next}
@@ -92,5 +92,6 @@ case "$cmd" in
     f="$(file_of "${1:-}")"; command -v herdr-app >/dev/null || die "herdr-app not found"
     herdr-app do "issues.run-$1" >/dev/null || die "could not ask herdr-app to run it"
     echo "asked herdr-app to run issue #$1" ;;
+  help|-h|--help) sed -n 2p "$0" | sed 's/^# //' ;;
   *) sed -n 2p "$0" | sed 's/^# //'; exit 2 ;;
 esac

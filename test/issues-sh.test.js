@@ -85,6 +85,15 @@ describe("edits", () => {
     expect(sh("summary", "1").err).toContain("summary text is required");
   });
 
+  test("help prints usage", () => {
+    for (const a of ["help", "-h", "--help"]) expect(sh(a).out).toContain("Usage: issues.sh");
+  });
+
+  test("summary keeps multiple lines", () => {
+    sh("summary", "1", "line 1\nline 2");
+    expect(file(1)).toMatch(/\n## Summary\nline 1\nline 2\n\n## Log\n/);
+  });
+
   test("summary is appended when there is no Log", () => {
     fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Description\nx\n");
     sh("summary", "1", "S");

@@ -4,7 +4,7 @@ import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, EditorState, Editor, TextView } from "gpui-base";
 import { props, theme, spaces, shared, openOverlay, closeOverlay, watchFolder, nextCommand, focused, notify } from "herdr";
 import * as store from "./store.js";
-import { runIssue, focusIssue, hasAgent } from "./runner.js";
+import { runIssue, focusIssue, closeIssuePane, hasAgent } from "./runner.js";
 
 // Same palette as the shipped spaces mod draws space avatars with.
 const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
@@ -52,10 +52,15 @@ class Board {
   }
 
   async reload(cx) {
-    const prev = this.loaded ? new Map(this.items.map((i) => [i.id, i.raw])) : null;
+    const prev = this.loaded ? new Map(this.items.map((i) => [i.id, i])) : null;
     try { this.items = await store.list(); this.loaded = true; } catch (e) { this.error = String(e?.message ?? e); }
-    const changed = prev ? this.items.filter((i) => prev.get(i.id) !== i.raw) : [];
+    const changed = prev ? this.items.filter((i) => prev.get(i.id)?.raw !== i.raw) : [];
     if (changed.length) this.blink(changed.map((i) => i.id), cx);
+    // An issue that just became done, from the board or a script, closes its agent's pane (herdr confirms).
+    for (const i of changed) {
+      const was = prev.get(i.id)?.meta.status;
+      if (was && was !== "done" && i.meta.status === "done") closeIssuePane(i.meta);
+    }
     cx.notify();
   }
 

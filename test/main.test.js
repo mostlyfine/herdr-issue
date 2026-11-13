@@ -194,6 +194,21 @@ describe("Board", () => {
     expect(cx.timers).toEqual([]);
   });
 
+  test("an issue that becomes done, from anywhere, closes its agent's pane", async () => {
+    await seed();
+    H.spaces = [{ id: "s1", name: "work", tabs: [] }];
+    H.agents = [{ space: "s1", pane: "p" }];
+    const { v, cx } = mount();
+    await flush();
+    await store.setStatus(1, "done");
+    await store.setStatus(3, "done");
+    await v.view.reload(cx);
+    expect(H.runs.filter(([c]) => c === "pane.close")).toEqual([["pane.close", { pane: "p" }]]);
+    await store.update(3, (m, b) => ({ meta: { ...m, title: "C2" }, body: b }));
+    await v.view.reload(cx);
+    expect(H.runs.filter(([c]) => c === "pane.close").length).toBe(1);
+  });
+
   test("the selected card is outlined only while the board has focus", async () => {
     await seed();
     const { v, cx, render } = mount();

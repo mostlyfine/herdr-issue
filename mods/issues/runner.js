@@ -39,6 +39,12 @@ export function focusIssue(meta) {
   return true;
 }
 
+// Closes the pane of the agent an issue was run in, if it is open.
+export function closeIssuePane(meta) {
+  const agent = locate(meta)?.agent;
+  if (agent) run("pane.close", { pane: agent.pane });
+}
+
 export async function runIssue(id) {
   const issue = await store.get(id);
   if (!issue) return;

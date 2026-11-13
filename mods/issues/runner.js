@@ -68,6 +68,9 @@ export async function runIssue(id) {
     }
     const name = `#${issue.id} ${meta.title ?? ""}`.trim();
     const argv = meta.model ? [agent, "--model", meta.model] : [agent];
+    // copilot rejects a positional prompt (how herdr passes `task`); it takes the first message as -i.
+    if (agent === "copilot") argv.push("-i", task(issue));
+    const first = agent === "copilot" ? undefined : task(issue);
     // workspace: an existing space gets a new tab; an unknown name becomes a new space.
     const target = meta.workspace && spaces().find((s) => s.name === meta.workspace);
     const space = meta.workspace || name;
@@ -75,8 +78,8 @@ export async function runIssue(id) {
     const { repo: _old, ...rest } = meta;
     await store.save(issue, { ...rest, repository: rest.repository || repoPath, status: "doing", branch, worktree: path, space, tab },
       store.appendLog(issue.body, `Run started (space ${space}${tab ? ` / tab ${tab}` : ""}, branch ${branch}${agent !== "claude" ? `, agent ${agent}` : ""}${meta.model ? `, model ${meta.model}` : ""})`));
-    if (target) run("tab.new", { space: target.id, name, folder: path, argv, task: task(issue) });
-    else run("space.new", { name: space, folder: path, argv, task: task(issue) });
+    if (target) run("tab.new", { space: target.id, name, folder: path, argv, task: first });
+    else run("space.new", { name: space, folder: path, argv, task: first });
   } catch (e) {
     notify({ title: `Cannot run issue #${issue.id}`, body: String(e?.message ?? e), level: "error" });
     await store.update(issue.id, (m, b) => ({ meta: m, body: store.appendLog(b, `Run failed: ${e?.message ?? e}`) })).catch(() => {});

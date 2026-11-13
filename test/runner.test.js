@@ -150,7 +150,8 @@ describe("runIssue", () => {
     await store.create({ title: "B", repository: "/src/repo", body: BODY });
     await store.update(2, (m, b) => ({ meta: { ...m, agent: "copilot" }, body: b }));
     await runIssue(2);
-    expect(H.runs[1][1].argv).toEqual(["copilot"]);
+    expect(H.runs[1][1].argv).toEqual(["copilot", "-i", expect.stringContaining("issue #2")]);
+    expect(H.runs[1][1].task).toBeUndefined();
   });
 
   test("unknown agent is not started", async () => {

@@ -371,13 +371,21 @@ describe("Preview", () => {
     await flush();
     const els = render();
     expect(H.texts).toContain("#1 A");
-    expect(H.texts).toContain(BODY);
+    expect(H.texts).toContain("## Description  \nDo it  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n\n## Log  \n");
     on(els, "issues-view", "on_key_down")({ key: "a" }, cx);
     on(els, "issues-view", "on_key_down")({ key: "escape" }, cx);
     on(els, "issues-close", "on_click")();
     on(els, "issues-edit", "on_click")();
     expect(H.closed).toEqual(["p", "p", "p"]);
     expect(H.overlays[0].props).toEqual({ view: "edit", id: 1 });
+  });
+
+  test("single newlines render as line breaks except inside code fences", async () => {
+    await store.create({ title: "A", repository: "", body: "a\nb\n```\nx\ny\n```\nc" });
+    const { render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    render();
+    expect(H.texts).toContain("a  \nb  \n```\nx\ny\n```\nc");
   });
 
   test("run runs the issue, then closes", async () => {
@@ -415,6 +423,6 @@ describe("Preview", () => {
     await flush();
     const els = render();
     expect(els["issues-fm"]).toBeUndefined();
-    expect(H.texts).toContain(BODY);
+    expect(H.texts).toContain("## Description  \nDo it  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n\n## Log  \n");
   });
 });

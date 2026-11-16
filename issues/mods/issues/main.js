@@ -270,6 +270,14 @@ class Menu {
   }
 }
 
+function hardBreaks(md) {
+  let fence = false;
+  return md.split("\n").map((l, i, a) => {
+    if (/^\s*(```|~~~)/.test(l)) { fence = !fence; return l; }
+    return fence || !l.trim() || i === a.length - 1 ? l : `${l}  `;
+  }).join("\n");
+}
+
 class Preview {
   init(cx) {
     this.handle = cx.focus_handle();
@@ -293,7 +301,7 @@ class Preview {
           .child(div().id("issues-fm").mb(8).text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
             .on_click((_e, cx) => { this.meta = !this.meta; cx.notify(); }).child(`${this.meta ? "▾" : "▸"} Frontmatter`))
           .when(Boolean(this.meta), (el) => el.child(TextView.markdown(`issues-fm-${p.id}`, `\`\`\`yaml\n${fm}\n\`\`\``))))
-        .child(TextView.markdown(`issues-md-${p.id}`, this.issue?.body ?? "")))
+        .child(TextView.markdown(`issues-md-${p.id}`, hardBreaks(this.issue?.body ?? ""))))
       .child(h_flex().pt(14).gap(8).justify_end()
         .child(button(t, "issues-run", "▶ Run", false, (_e, cx) => task(cx, async () => { try { await runIssue(p.id); } finally { close(); } })))
         .child(button(t, "issues-edit", "Edit", true, () => { closeOverlay(p.overlay); openEdit(p.id); })));

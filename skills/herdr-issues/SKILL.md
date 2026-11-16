@@ -64,6 +64,8 @@ workspace / repository / agent / model / worktree are not in the kanban form; se
 
 On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree` is used; an existing worktree is reused). If `workspace` names an existing space a tab is added there, otherwise a space with that name is created, or `#<id> <title>` when empty. The program is `agent` (claude when empty); with `model` it starts as `<agent> --model <model>`. A legacy `repo:` key is read as repository.
 
+Write `## Description` with one sentence per line: break the line after each `。` (or `.` in English).
+
 Write `## Acceptance criteria` as a checkbox list (`- [ ] ...`). When creating an issue, derive verifiable criteria from the description.
 
 Status: `todo` not started, `doing` in progress, `waiting` blocked on someone else's action (a review, an answer, another task), `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).

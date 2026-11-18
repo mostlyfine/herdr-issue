@@ -9,10 +9,10 @@ Each issue is one markdown file at `~/.config/herdr-app/data/issues/<id>.md` (ov
 
 ## Always use issues.sh
 
-`issues.sh` is in this skill's base directory (shown when the skill loads), whether it was installed as a plugin, with `npx skills`, or by `install.sh`. Run it as `bash <dir>/issues.sh ...`.
+`issues.sh` is in this skill's base directory (shown when the skill loads), whether it was installed as a plugin, with `npx skills`, or by `install.sh`. Run it directly as `<dir>/issues.sh ...` (it is executable). Do not put `bash ` inside `$S`: zsh does not word-split `$S`, so `S="bash ..."` fails with "no such file or directory".
 
 ```sh
-S="bash <base directory of this skill>/issues.sh"   # issues.sh sits next to this SKILL.md
+S="<base directory of this skill>/issues.sh"   # issues.sh sits next to this SKILL.md
 $S list                          # id, status, title, repository (tab separated)
 $S show <id>                     # print the issue
 $S path <id>                     # absolute path of the file

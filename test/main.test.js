@@ -246,7 +246,7 @@ describe("Edit", () => {
   test("new issue: template, empty title error, save with focused cwd", async () => {
     H.focused = { cwd: "/src/x" };
     const { v, cx, render } = mount({ view: "edit", overlay: "o1" });
-    expect(v.view.body.value()).toContain("## Acceptance criteria");
+    expect(v.view.body.value()).toContain("## Goal\n- [ ] \n\n## Todo");
     let els = render();
     expect(H.texts).toContain("New issue");
     await on(els, "issues-save", "on_click")({}, cx);

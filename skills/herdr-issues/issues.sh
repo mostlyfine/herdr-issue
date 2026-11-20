@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> <n> | status <id> <todo|doing|waiting|done> [note] | log <id> <text> | summary <id> <text (multi-line ok)> | run <id> | help
+# Usage: issues.sh list | show <id> | path <id> | new <title> [repository] [workspace] [model] [worktree] [agent] | set <id> <workspace|repository|agent|model|worktree|title> <value> | check <id> [todo] <n> | status <id> <todo|doing|waiting|done> [note] | log <id> <text> | summary <id> <text (multi-line ok)> | run <id> | help
 set -euo pipefail
 
 dir="${ISSUES_DIR:-${HERDR_APP_HOME:-$HOME/.config/herdr-app}/data/issues}"
@@ -17,13 +17,14 @@ set_meta() {
     {print}' "$1" > "$1.tmp" && mv "$1.tmp" "$1"
 }
 
-# append_log <file> <text>: add "- <now> <text>" at the end of the Log section.
+# append_log <file> <text>: add "- <now>: <text>" at the end of the Logs section (or a legacy Log section).
 append_log() {
-  local entry="- $(now) $2"
-  if ! grep -qx '## Log' "$1"; then printf '\n## Log\n%s\n' "$entry" >> "$1"; return; fi
-  awk -v e="$entry" '
+  local entry="- $(now): $2" h='## Logs'
+  grep -qx '## Logs' "$1" || ! grep -qx '## Log' "$1" || h='## Log'
+  if ! grep -qx "$h" "$1"; then printf '\n%s\n%s\n' "$h" "$entry" >> "$1"; return; fi
+  awk -v e="$entry" -v h="$h" '
     {lines[NR]=$0}
-    $0=="## Log"{at=NR}
+    $0==h{at=NR}
     at&&NR>at&&/^## /&&!end{end=NR}
     END{
       if(!end)end=NR+1
@@ -50,7 +51,7 @@ case "$cmd" in
     t="$(now)"
     { printf -- '---\nid: %s\ntitle: %s\nstatus: todo\n' "$id" "$1"
       printf 'workspace: %s\nrepository: %s\nagent: %s\nmodel: %s\nworktree: %s\n' "${3:-}" "${2:-$PWD}" "${6:-}" "${4:-}" "${5:-}"
-      printf 'created: %s\nupdated: %s\n---\n## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n' "$t" "$t"; } > "$dir/$id.md"
+      printf 'created: %s\nupdated: %s\n---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n' "$t" "$t"; } > "$dir/$id.md"
     echo "$dir/$id.md" ;;
   status)
     f="$(file_of "${1:-}")"; s="${2:-}"
@@ -65,15 +66,18 @@ case "$cmd" in
     case "${2:-}" in workspace|repository|agent|model|worktree|title) ;; *) die "set accepts workspace|repository|agent|model|worktree|title: ${2:-}" ;; esac
     set_meta "$f" "$2" "${3:-}"; set_meta "$f" updated "$(now)" ;;
   check)
-    f="$(file_of "${1:-}")"; [[ "${2:-}" =~ ^[0-9]+$ ]] || die "give the acceptance criterion number (from 1)"
-    awk -v n="$2" '
-      $0=="## Acceptance criteria"{sec=1; print; next}
+    f="$(file_of "${1:-}")"
+    if [ "${2:-}" = todo ]; then sec="## Todo" what=Todo verb=done n="${3:-}"
+    else sec="## Goal" what=Goal verb=met n="${2:-}"; grep -qx "$sec" "$f" || ! grep -qx '## Acceptance criteria' "$f" || sec="## Acceptance criteria"; fi
+    [[ "$n" =~ ^[0-9]+$ ]] || die "give the $what item number (from 1)"
+    awk -v n="$n" -v h="$sec" '
+      $0==h{sec=1; print; next}
       sec&&/^## /{sec=0}
       sec&&/^[[:space:]]*[-*] \[[ xX]\][[:space:]]*[^[:space:]]/{c++; if(c==n){sub(/\[[ xX]\]/,"[x]"); hit=1}}
       {print}
-      END{if(!hit) exit 3}' "$f" > "$f.tmp" || { rm -f "$f.tmp"; die "acceptance criterion $2 not found"; }
+      END{if(!hit) exit 3}' "$f" > "$f.tmp" || { rm -f "$f.tmp"; die "$what item $n not found"; }
     mv "$f.tmp" "$f"; set_meta "$f" updated "$(now)"
-    append_log "$f" "Acceptance criterion $2 met: $(awk -v n="$2" '$0=="## Acceptance criteria"{sec=1;next} sec&&/^## /{exit} sec&&/^[[:space:]]*[-*] \[[ xX]\][[:space:]]*[^[:space:]]/{c++; if(c==n){sub(/^[[:space:]]*[-*] \[[ xX]\][[:space:]]*/,""); print; exit}}' "$f")" ;;
+    append_log "$f" "$what $n $verb: $(awk -v n="$n" -v h="$sec" '$0==h{sec=1;next} sec&&/^## /{exit} sec&&/^[[:space:]]*[-*] \[[ xX]\][[:space:]]*[^[:space:]]/{c++; if(c==n){sub(/^[[:space:]]*[-*] \[[ xX]\][[:space:]]*/,""); print; exit}}' "$f")" ;;
   log)
     f="$(file_of "${1:-}")"; [ -n "${2:-}" ] || die "log text is required"
     set_meta "$f" updated "$(now)"; append_log "$f" "$2" ;;
@@ -81,12 +85,14 @@ case "$cmd" in
     f="$(file_of "${1:-}")"; [ -n "${2:-}" ] || die "summary text is required"
     S="$2" awk '
       function put(){print "## Summary"; print ENVIRON["S"]; print ""; done=1}
+      NR==1&&/^---$/{fm=1; print; next}
+      fm{print; if(/^---$/){fm=0; put()} next}
+      !done{put()}
       $0=="## Summary"{skip=1; next}
       skip&&/^## /{skip=0}
       skip{next}
-      $0=="## Log"&&!done{put()}
       {print}
-      END{if(!done){print ""; put()}}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+      END{if(!done)put()}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
     set_meta "$f" updated "$(now)"; append_log "$f" "Summary updated" ;;
   run)
     f="$(file_of "${1:-}")"; command -v herdr-app >/dev/null || die "herdr-app not found"

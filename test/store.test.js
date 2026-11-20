@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { H, tempHome } from "./fakes.js";
 import * as store from "../mods/issues/store.js";
 
-const BODY = "## Description\nDo it\n\n## Acceptance criteria\n- [ ] a\n- [x] b\n- [ ] \n\n## Log\n";
+const BODY = "## Summary\nDo it\n\n## Goal\n- [ ] a\n- [x] b\n- [ ] \n\n## Todo\n- [x] t\n\n## Logs\n";
 
 beforeEach(() => H.reset(tempHome()));
 
@@ -36,8 +36,11 @@ test("repoOf prefers repository, falls back to repo", () => {
 });
 
 describe("criteria", () => {
-  test("reads checkboxes under Acceptance criteria and skips empty ones", () => {
+  test("reads checkboxes under Goal and skips empty ones", () => {
     expect(store.criteria(BODY)).toEqual([{ done: false, text: "a" }, { done: true, text: "b" }]);
+  });
+  test("falls back to Acceptance criteria", () => {
+    expect(store.criteria("## Acceptance criteria\n- [x] a\n")).toEqual([{ done: true, text: "a" }]);
   });
   test("no section → empty", () => {
     expect(store.criteria("## Description\n- [ ] a\n")).toEqual([]);
@@ -45,16 +48,19 @@ describe("criteria", () => {
 });
 
 describe("appendLog", () => {
-  test("appends at the end of Log", () => {
+  test("appends at the end of Logs", () => {
     const out = store.appendLog(BODY + "- old\n\n", "new");
-    expect(out).toMatch(/- old\n- \d{4}-\d\d-\d\d \d\d:\d\d new\n$/);
+    expect(out).toMatch(/- old\n- \d{4}-\d\d-\d\d \d\d:\d\d: new\n$/);
+  });
+  test("appends to a legacy Log section", () => {
+    expect(store.appendLog("## Log\n- old\n", "new")).toMatch(/^## Log\n- old\n- .*: new\n$/);
   });
   test("inserts before the next heading", () => {
     const out = store.appendLog("## Log\n- old\n\n## After\nx\n", "new");
-    expect(out).toMatch(/## Log\n- old\n- .* new\n\n## After\nx\n$/);
+    expect(out).toMatch(/## Log\n- old\n- .*: new\n\n## After\nx\n$/);
   });
   test("adds the section when missing", () => {
-    expect(store.appendLog("text\n", "new")).toMatch(/^text\n\n## Log\n- .* new\n$/);
+    expect(store.appendLog("text\n", "new")).toMatch(/^text\n\n## Logs\n- .*: new\n$/);
   });
 });
 

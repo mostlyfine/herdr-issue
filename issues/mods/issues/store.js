@@ -10,13 +10,14 @@ const ALWAYS = ["workspace", "repository", "agent", "model", "worktree"];
 
 // `repo` is the older name of `repository`.
 export const repoOf = (meta) => meta.repository || meta.repo || "";
-const LOG = "## Log";
-const DONE = "## Acceptance criteria";
+const LOGS = "## Logs";
+const LEGACY_LOG = "## Log";
 
-// The checkbox items under "## Acceptance criteria": [{ done, text }].
+// The checkbox items under "## Goal" (or the older "## Acceptance criteria"): [{ done, text }].
 export function criteria(body) {
   const lines = body.split("\n");
-  const at = lines.findIndex((l) => l.trim() === DONE);
+  let at = lines.findIndex((l) => l.trim() === "## Goal");
+  if (at < 0) at = lines.findIndex((l) => l.trim() === "## Acceptance criteria");
   if (at < 0) return [];
   const out = [];
   for (const l of lines.slice(at + 1)) {
@@ -54,10 +55,11 @@ export function serialize(meta, body) {
 }
 
 export function appendLog(body, text) {
-  const entry = `- ${now()} ${text}`;
+  const entry = `- ${now()}: ${text}`;
   const lines = body.replace(/\s+$/, "").split("\n");
-  const at = lines.indexOf(LOG);
-  if (at < 0) return `${lines.join("\n")}\n\n${LOG}\n${entry}\n`;
+  let at = lines.indexOf(LOGS);
+  if (at < 0) at = lines.indexOf(LEGACY_LOG);
+  if (at < 0) return `${lines.join("\n")}\n\n${LOGS}\n${entry}\n`;
   let end = lines.findIndex((l, i) => i > at && l.startsWith("## "));
   if (end < 0) end = lines.length;
   while (end - 1 > at && lines[end - 1].trim() === "") end--;

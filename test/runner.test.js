@@ -102,7 +102,7 @@ describe("runIssue", () => {
     expect(name).toBe("space.new");
     expect(args).toMatchObject({ name: "#1 Fix Login!", folder: path, argv: ["claude"] });
     expect(args.task).toContain("issue #1");
-    expect(args.task).toContain("issues.sh summary");
+    expect(args.task).toContain("## Todo");
     expect(args.task).not.toContain("/goal");
     const i = await store.get(1);
     expect(i.meta).toMatchObject({ status: "doing", branch: "issue/1-fix-login", worktree: path, space: "#1 Fix Login!", repository: "/src/repo/sub" });

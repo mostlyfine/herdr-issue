@@ -25,7 +25,7 @@ describe("new / list / show / path", () => {
     const a = sh("new", "First", "/src/a", "ws", "opus", "/wt", "codex");
     expect(a.out.trim()).toBe(`${dir}/1.md`);
     expect(file(1)).toMatch(/^---\nid: 1\ntitle: First\nstatus: todo\nworkspace: ws\nrepository: \/src\/a\nagent: codex\nmodel: opus\nworktree: \/wt\n/);
-    expect(file(1)).toContain("## Description\n\n\n## Acceptance criteria\n- [ ] \n\n## Log\n");
+    expect(file(1)).toContain("---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n");
     sh("new", "Second");
     expect(meta(2, "repository")).toBe(process.cwd());
     fs.writeFileSync(`${dir}/3.md`, "---\nid: 3\ntitle: Old\nstatus: done\nrepo: /old\n---\n");
@@ -66,21 +66,37 @@ describe("edits", () => {
     expect(file(1)).toMatch(/^---\nid: 1\ntitle: New\nupdated: .*\n---\nbody\n/);
   });
 
-  test("check numbers non-empty items", () => {
+  test("check numbers non-empty Goal items", () => {
     sh("check", "1", "2");
-    expect(file(1)).toContain("- [ ] first\n- [ ] \n* [x] second\n");
-    expect(file(1)).toMatch(/- .* Acceptance criterion 2 met: second\n$/);
-    expect(sh("check", "1", "3")).toMatchObject({ code: 1, err: "issues.sh: acceptance criterion 3 not found\n" });
+    expect(file(1)).toContain("## Goal\n- [ ] first\n- [ ] \n* [x] second\n");
+    expect(file(1)).toMatch(/\n- \d{4}-\d\d-\d\d \d\d:\d\d: Goal 2 met: second\n$/);
+    expect(sh("check", "1", "3")).toMatchObject({ code: 1, err: "issues.sh: Goal item 3 not found\n" });
     expect(fs.existsSync(`${dir}/1.md.tmp`)).toBe(false);
-    expect(sh("check", "1", "a").err).toContain("give the acceptance criterion number");
+    expect(sh("check", "1", "a").err).toContain("give the Goal item number");
   });
 
-  test("summary is inserted before Log and replaced next time", () => {
+  test("check todo targets the Todo section", () => {
+    fs.writeFileSync(`${dir}/1.md`, file(1).replace("## Todo\n- [ ] \n", "## Todo\n- [ ] do a\n"));
+    sh("check", "1", "todo", "1");
+    expect(file(1)).toContain("## Goal\n- [ ] first\n");
+    expect(file(1)).toContain("## Todo\n- [x] do a\n");
+    expect(file(1)).toMatch(/: Todo 1 done: do a\n$/);
+    expect(sh("check", "1", "todo").err).toContain("give the Todo item number");
+  });
+
+  test("check falls back to Acceptance criteria in old issues", () => {
+    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Acceptance criteria\n- [ ] a\n\n## Log\n");
+    sh("check", "1", "1");
+    expect(file(1)).toMatch(/## Acceptance criteria\n- \[x\] a\n\n## Log\n- .*: Goal 1 met: a\n$/);
+  });
+
+  test("summary replaces the Summary at the top", () => {
     sh("log", "1", "started");
     sh("summary", "1", "first try");
     sh("summary", "1", "Did X.");
     const f = file(1);
-    expect(f).toMatch(/\n## Summary\nDid X\.\n\n## Log\n- .* started\n- .* Summary updated\n- .* Summary updated\n$/);
+    expect(f).toMatch(/\n---\n## Summary\nDid X\.\n\n## Goal\n/);
+    expect(f).toMatch(/## Logs\n- .*: started\n- .*: Summary updated\n- .*: Summary updated\n$/);
     expect(f).not.toContain("first try");
     expect(sh("summary", "1").err).toContain("summary text is required");
   });
@@ -91,13 +107,16 @@ describe("edits", () => {
 
   test("summary keeps multiple lines", () => {
     sh("summary", "1", "line 1\nline 2");
-    expect(file(1)).toMatch(/\n## Summary\nline 1\nline 2\n\n## Log\n/);
+    expect(file(1)).toMatch(/\n## Summary\nline 1\nline 2\n\n## Goal\n/);
   });
 
-  test("summary is appended when there is no Log", () => {
-    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Description\nx\n");
+  test("summary is inserted first when missing, with or without frontmatter", () => {
+    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Description\nx\n## Summary\nold\n");
     sh("summary", "1", "S");
-    expect(file(1)).toMatch(/## Description\nx\n\n## Summary\nS\n\n\n## Log\n- .* Summary updated\n$/);
+    expect(file(1)).toMatch(/---\n## Summary\nS\n\n## Description\nx\n\n## Logs\n- .*: Summary updated\n$/);
+    fs.writeFileSync(`${dir}/1.md`, "body\n");
+    sh("summary", "1", "S");
+    expect(file(1)).toMatch(/^## Summary\nS\n\nbody\n/);
   });
 
   test("status sets, keeps and clears done_at", () => {
@@ -110,17 +129,20 @@ describe("edits", () => {
     sh("status", "1", "waiting");
     expect(meta(1, "done_at")).toBeUndefined();
     expect(meta(1, "status")).toBe("waiting");
-    expect(file(1)).toMatch(/status → done\n- .* still done\n- .* status → waiting\n$/);
+    expect(file(1)).toMatch(/: status → done\n- .*: still done\n- .*: status → waiting\n$/);
     expect(sh("status", "1", "nope").err).toContain("status must be one of");
   });
 
-  test("log appends before the next section and creates Log if missing", () => {
-    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Log\n- a\n\n## After\nz\n");
+  test("log appends before the next section, uses a legacy Log, and creates Logs if missing", () => {
+    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Logs\n- a\n\n## After\nz\n");
     sh("log", "1", "b");
-    expect(file(1)).toMatch(/## Log\n- a\n- .* b\n\n## After\nz\n$/);
+    expect(file(1)).toMatch(/## Logs\n- a\n- \d{4}-\d\d-\d\d \d\d:\d\d: b\n\n## After\nz\n$/);
+    fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\n## Log\n- a\n");
+    sh("log", "1", "b");
+    expect(file(1)).toMatch(/## Log\n- a\n- .*: b\n$/);
     fs.writeFileSync(`${dir}/1.md`, "---\nid: 1\n---\nbody\n");
     sh("log", "1", "c");
-    expect(file(1)).toMatch(/body\n\n## Log\n- .* c\n$/);
+    expect(file(1)).toMatch(/body\n\n## Logs\n- .*: c\n$/);
     expect(sh("log", "1").err).toContain("log text is required");
   });
 });

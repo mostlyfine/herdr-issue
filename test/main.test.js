@@ -398,6 +398,20 @@ describe("Preview", () => {
     expect(H.closed).toEqual(["p"]);
   });
 
+  test("pane button shows only while an agent runs, focuses it and closes", async () => {
+    await seed();
+    H.spaces = [{ id: "s1", name: "work", tabs: [] }];
+    H.agents = [{ space: "s1", pane: "p" }];
+    const { render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    expect(render()["issues-pane"]).toBeUndefined();
+    const m = mount({ view: "view", id: 3, overlay: "q" });
+    await flush();
+    on(m.render(), "issues-pane", "on_click")();
+    expect(H.runs).toContainEqual(["pane.focus", { pane: "p" }]);
+    expect(H.closed).toEqual(["q"]);
+  });
+
   test("frontmatter is folded until its header is clicked", async () => {
     await seed();
     const { cx, render } = mount({ view: "view", id: 1, overlay: "p" });

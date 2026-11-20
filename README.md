@@ -10,7 +10,7 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 - Add, edit and delete issues; drag and drop to change status
 - Left click shows the body as a markdown preview, with the frontmatter folded above it
 - Added or updated cards flash for a moment
-- Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card focuses its pane
+- Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card or in the preview focuses its pane
 - While working, the agent checks off `## Todo` and `## Goal` items and writes to `## Memo`, `## References` and `## Logs`
 - Issues done for more than 24 hours are hidden (the file stays)
 

@@ -303,6 +303,8 @@ class Preview {
           .when(Boolean(this.meta), (el) => el.child(TextView.markdown(`issues-fm-${p.id}`, `\`\`\`yaml\n${fm}\n\`\`\``))))
         .child(TextView.markdown(`issues-md-${p.id}`, hardBreaks(this.issue?.body ?? ""))))
       .child(h_flex().pt(14).gap(8).justify_end()
+        .when(Boolean(this.issue && hasAgent(this.issue.meta)), (el) => el
+          .child(button(t, "issues-pane", "Pane ↗", false, () => { focusIssue(this.issue.meta); close(); })))
         .child(button(t, "issues-run", "▶ Run", false, (_e, cx) => task(cx, async () => { try { await runIssue(p.id); } finally { close(); } })))
         .child(button(t, "issues-edit", "Edit", true, () => { closeOverlay(p.overlay); openEdit(p.id); })));
   }

@@ -51,7 +51,7 @@ case "$cmd" in
     t="$(now)"
     { printf -- '---\nid: %s\ntitle: %s\nstatus: todo\n' "$id" "$1"
       printf 'workspace: %s\nrepository: %s\nagent: %s\nmodel: %s\nworktree: %s\n' "${3:-}" "${2:-$PWD}" "${6:-}" "${4:-}" "${5:-}"
-      printf 'created: %s\nupdated: %s\n---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n' "$t" "$t"; } > "$dir/$id.md"
+      printf 'created: %s\nupdated: %s\n---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Note\n\n\n## References\n\n\n## Logs\n' "$t" "$t"; } > "$dir/$id.md"
     echo "$dir/$id.md" ;;
   status)
     f="$(file_of "${1:-}")"; s="${2:-}"

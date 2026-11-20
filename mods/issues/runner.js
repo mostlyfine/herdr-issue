@@ -14,7 +14,7 @@ async function git(cwd, args) {
 function task(issue) {
   return `Use the herdr-issues skill to work on issue #${issue.id} (${issue.file}). ` +
     `Read "## Summary" and "## Goal", then work through "## Todo". Log each milestone, check off each Todo item when it is done and each Goal item once you have verified it. ` +
-    `Write findings to "## Memo" and related links to "## References". ` +
+    `Write findings to "## Note" and related links to "## References". ` +
     `If you are blocked on someone else, set the status to waiting with the condition to resume. ` +
     `When every Goal item is met, set the status to done.`;
 }

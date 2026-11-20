@@ -26,7 +26,7 @@ $S log <id> "<text>"             # append one line to the log
 $S run <id>                      # run it like the kanban does (herdr-app must be running): worktree → agent
 ```
 
-Edit the file directly (path from `path`) to write `## Summary`, `## Goal`, `## Todo`, `## Memo` and `## References`. Never hand-edit the frontmatter or `## Logs`; use the commands so `updated` and the log format stay right.
+Edit the file directly (path from `path`) to write `## Summary`, `## Goal`, `## Todo`, `## Note` and `## References`. Never hand-edit the frontmatter or `## Logs`; use the commands so `updated` and the log format stay right.
 
 ## File format
 
@@ -56,7 +56,7 @@ Overview and background in a few lines.
 ## Todo
 - [ ] One action per line
 
-## Memo
+## Note
 Notes found while working, one paragraph each.
 
 ## References
@@ -74,13 +74,13 @@ Sections:
 - `## Summary`: the overview and background of the task in a few lines, one sentence per line (break the line after each `。`, or `.` in English).
 - `## Goal`: the done conditions as a checkbox list (`- [ ] ...`). Write each one as a verifiable state ("〜になっている"), not an action. When creating an issue, derive them from the summary.
 - `## Todo`: the actions to reach the Goal as a checkbox list (`- [ ] ...`). Write each one as an action ("〜する").
-- `## Memo`: notes found while working, written freely, one paragraph per topic.
+- `## Note`: notes found while working, written freely, one paragraph per topic.
 - `## References`: links to related tickets, documents, Slack, mail, JIRA, GitHub and so on, as `- [title](url)`.
 - `## Logs`: the work log, one line per entry as `- datetime: description`. Written only by the commands.
 
 Always include these Goal items by issue type, and add them when they are missing from an existing issue:
 - Implementation: `PR を作成する` and `PR の approve を受ける`. Do not set `done` before the approve is confirmed (e.g. `gh pr view`).
-- Investigation: `調査した内容を記録する` (in `## Memo`) and `依頼者に Slack で返信する`.
+- Investigation: `調査した内容を記録する` (in `## Note`) and `依頼者に Slack で返信する`.
 
 Older issues may have `## Description`, `## Acceptance criteria` and `## Log` instead; `check <id> <n>` and `log` still work on them.
 
@@ -93,7 +93,7 @@ The first message gives the issue number and file path. Work in this order:
 1. Read it with `show <id>`. The current directory is a git worktree dedicated to this issue.
 2. Work through `## Todo`, adding items when needed. Run `check <id> todo <n>` when one is done.
 3. At each milestone (investigation, decision, implementation, tests) record one line with `log <id> "<what you did and the result>"`.
-4. Write findings to `## Memo` and related links to `## References`.
+4. Write findings to `## Note` and related links to `## References`.
 5. Each time a Goal item is met, run `check <id> <n>`. Never check one you have not verified.
 6. If you are blocked on someone else (an answer, a review, another task), run `status <id> waiting "<condition to resume>"`, then ask. Set `doing` again when you resume.
 7. When every Goal item is met, run `status <id> done`.

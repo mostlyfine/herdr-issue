@@ -25,7 +25,7 @@ describe("new / list / show / path", () => {
     const a = sh("new", "First", "/src/a", "ws", "opus", "/wt", "codex");
     expect(a.out.trim()).toBe(`${dir}/1.md`);
     expect(file(1)).toMatch(/^---\nid: 1\ntitle: First\nstatus: todo\nworkspace: ws\nrepository: \/src\/a\nagent: codex\nmodel: opus\nworktree: \/wt\n/);
-    expect(file(1)).toContain("---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n");
+    expect(file(1)).toContain("---\n## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Note\n\n\n## References\n\n\n## Logs\n");
     sh("new", "Second");
     expect(meta(2, "repository")).toBe(process.cwd());
     fs.writeFileSync(`${dir}/3.md`, "---\nid: 3\ntitle: Old\nstatus: done\nrepo: /old\n---\n");

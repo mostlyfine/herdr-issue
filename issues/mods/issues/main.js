@@ -15,7 +15,7 @@ const spaceColor = (t, space) => {
 
 const FADE = { ms: 33, frames: 48, pulses: 2, min: 0.25 };
 
-const NEW_BODY = "## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n";
+const NEW_BODY = "## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Note\n\n\n## References\n\n\n## Logs\n";
 
 const openEdit = (id) => openOverlay({ mod: "issues", props: { view: "edit", id }, kind: "dialog", modal: true, width: 640, height: 520 });
 const openView = (id) => openOverlay({ mod: "issues", props: { view: "view", id }, kind: "dialog", width: 800, height: 640 });

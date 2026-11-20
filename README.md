@@ -11,7 +11,7 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 - Left click shows the body as a markdown preview, with the frontmatter folded above it
 - Added or updated cards flash for a moment
 - Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card or in the preview focuses its pane
-- While working, the agent checks off `## Todo` and `## Goal` items and writes to `## Memo`, `## References` and `## Logs`
+- While working, the agent checks off `## Todo` and `## Goal` items and writes to `## Note`, `## References` and `## Logs`
 - Issues done for more than 24 hours are hidden (the file stays)
 
 ## Requirements
@@ -100,7 +100,7 @@ Overview and background in a few lines.
 ## Todo
 - [ ] Add validation to the form
 
-## Memo
+## Note
 Notes found while working, one paragraph each.
 
 ## References
@@ -115,7 +115,7 @@ Notes found while working, one paragraph each.
 | `## Summary` | Overview and background in a few lines |
 | `## Goal` | Done conditions, written as states |
 | `## Todo` | Actions to reach the Goal |
-| `## Memo` | Free notes taken while working, one paragraph each |
+| `## Note` | Free notes taken while working, one paragraph each |
 | `## References` | Related tickets, documents, Slack, mail, JIRA, GitHub links |
 | `## Logs` | One line per entry: `- datetime: description` |
 
@@ -133,7 +133,7 @@ Notes found while working, one paragraph each.
 
 1. Creates a worktree on branch `issue/<id>-<title>` in `repository` (reuses it if it exists).
 2. Starts the agent in the `workspace` space or tab and asks it to work on the issue.
-3. The agent logs milestones with the `herdr-issues` skill, checks off Todo items it has done and Goal items it has verified, writes findings to Memo, and sets the status to `done`.
+3. The agent logs milestones with the `herdr-issues` skill, checks off Todo items it has done and Goal items it has verified, writes findings to Note, and sets the status to `done`.
 4. If the agent is blocked on someone else, it sets the status to `waiting` with the condition to resume.
 
 ### Skill

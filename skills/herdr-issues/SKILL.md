@@ -1,6 +1,6 @@
 ---
 name: herdr-issues
-description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, write a summary, update status (todo/doing/waiting/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". The agent (claude / codex / copilot) started from the kanban records its progress with this skill.
+description: Operate the herdr-app issue kanban (~/.config/herdr-app/data/issues/*.md). Create, list and read issues, append to the work log, check off Goal / Todo items, update status (todo/doing/waiting/done), and run issues. Use for "create an issue", "add to the ticket", "update the status", "run issue #N", "work on issue #N". The agent (claude / codex / copilot) started from the kanban records its progress with this skill.
 ---
 
 # herdr-issues
@@ -18,14 +18,15 @@ $S show <id>                     # print the issue
 $S path <id>                     # absolute path of the file
 $S new "<title>" [repository] [workspace] [model] [worktree] [agent]  # create (repository defaults to cwd); prints the path
 $S set <id> <workspace|repository|agent|model|worktree|title> "<value>"  # change a setting ("" clears it)
-$S check <id> <n>                # check off acceptance criterion n (from 1) and log it
+$S check <id> <n>                # check off Goal item n (from 1) and log it
+$S check <id> todo <n>           # check off Todo item n (from 1) and log it
 $S summary <id> "<text>"         # write (replace) the ## Summary section and log it
 $S status <id> <status> [note]   # change status and log it
 $S log <id> "<text>"             # append one line to the log
 $S run <id>                      # run it like the kanban does (herdr-app must be running): worktree → agent
 ```
 
-Edit the file directly (path from `path`) only to extend `## Description`. Never hand-edit the frontmatter, `## Summary` or `## Log`; use the commands so `updated` and the log format stay right.
+Edit the file directly (path from `path`) to write `## Summary`, `## Goal`, `## Todo`, `## Memo` and `## References`. Never hand-edit the frontmatter or `## Logs`; use the commands so `updated` and the log format stay right.
 
 ## File format
 
@@ -46,27 +47,42 @@ created: 2026-11-10 10:00
 updated: 2026-11-10 10:00
 done_at: 2026-11-10 12:00 # when it became done (removed for other statuses)
 ---
-## Description
-What to do
-
-## Acceptance criteria
-- [ ] One verifiable outcome per line
-- [ ] e.g. `make test` passes
-
 ## Summary
-What was done, results, open points
+Overview and background in a few lines.
 
-## Log
-- 2026-11-10 10:05 Run started (branch issue/12-...)
+## Goal
+- [ ] One verifiable state per line, e.g. `make test` passes
+
+## Todo
+- [ ] One action per line
+
+## Memo
+Notes found while working, one paragraph each.
+
+## References
+- [PR #34](https://github.com/org/repo/pull/34)
+
+## Logs
+- 2026-11-10 10:05: Run started (branch issue/12-...)
 ```
 
 workspace / repository / agent / model / worktree are not in the kanban form; set them in the frontmatter (keys stay even when empty).
 
 On run: a worktree on `issue/<id>-…` is created in `repository` (or `worktree` is used; an existing worktree is reused). If `workspace` names an existing space a tab is added there, otherwise a space with that name is created, or `#<id> <title>` when empty. The program is `agent` (claude when empty); with `model` it starts as `<agent> --model <model>`. A legacy `repo:` key is read as repository.
 
-Write `## Description` with one sentence per line: break the line after each `。` (or `.` in English).
+Sections:
+- `## Summary`: the overview and background of the task in a few lines, one sentence per line (break the line after each `。`, or `.` in English).
+- `## Goal`: the done conditions as a checkbox list (`- [ ] ...`). Write each one as a verifiable state ("〜になっている"), not an action. When creating an issue, derive them from the summary.
+- `## Todo`: the actions to reach the Goal as a checkbox list (`- [ ] ...`). Write each one as an action ("〜する").
+- `## Memo`: notes found while working, written freely, one paragraph per topic.
+- `## References`: links to related tickets, documents, Slack, mail, JIRA, GitHub and so on, as `- [title](url)`.
+- `## Logs`: the work log, one line per entry as `- datetime: description`. Written only by the commands.
 
-Write `## Acceptance criteria` as a checkbox list (`- [ ] ...`). When creating an issue, derive verifiable criteria from the description.
+Always include these Goal items by issue type, and add them when they are missing from an existing issue:
+- Implementation: `PR を作成する` and `PR の approve を受ける`. Do not set `done` before the approve is confirmed (e.g. `gh pr view`).
+- Investigation: `調査した内容を記録する` (in `## Memo`) and `依頼者に Slack で返信する`.
+
+Older issues may have `## Description`, `## Acceptance criteria` and `## Log` instead; `check <id> <n>` and `log` still work on them.
 
 Status: `todo` not started, `doing` in progress, `waiting` blocked on someone else's action (a review, an answer, another task), `done` complete. Done issues leave the board after 24 hours (the file stays and `list` still shows it).
 
@@ -75,7 +91,9 @@ Status: `todo` not started, `doing` in progress, `waiting` blocked on someone el
 The first message gives the issue number and file path. Work in this order:
 
 1. Read it with `show <id>`. The current directory is a git worktree dedicated to this issue.
-2. At each milestone (investigation, decision, implementation, tests) record one line with `log <id> "<what you did and the result>"`.
-3. Each time an acceptance criterion is met, run `check <id> <n>`. Never check one you have not verified.
-4. If you are blocked on someone else (an answer, a review, another task), run `status <id> waiting "<condition to resume>"`, then ask. Set `doing` again when you resume.
-5. When finished, write `summary <id> "<what was done, results, open points>"`, then `status <id> done`.
+2. Work through `## Todo`, adding items when needed. Run `check <id> todo <n>` when one is done.
+3. At each milestone (investigation, decision, implementation, tests) record one line with `log <id> "<what you did and the result>"`.
+4. Write findings to `## Memo` and related links to `## References`.
+5. Each time a Goal item is met, run `check <id> <n>`. Never check one you have not verified.
+6. If you are blocked on someone else (an answer, a review, another task), run `status <id> waiting "<condition to resume>"`, then ask. Set `doing` again when you resume.
+7. When every Goal item is met, run `status <id> done`.

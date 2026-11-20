@@ -1,6 +1,6 @@
 # herdr-app issues mod
 
-An issue kanban for herdr-app, opened from an Issues tab next to Files and Changes. Issues are markdown files; running one from the board starts an agent (claude, codex or copilot) in a git worktree made for that issue, and the agent works through it. The agent uses the bundled skill `herdr-issues` to write its log, a summary and the status back to the issue.
+An issue kanban for herdr-app, opened from an Issues tab next to Files and Changes. Issues are markdown files; running one from the board starts an agent (claude, codex or copilot) in a git worktree made for that issue, and the agent works through it. The agent uses the bundled skill `herdr-issues` to write its log, checked-off Goal / Todo items, memos and the status back to the issue.
 
 ![Issues](preview.png)
 
@@ -11,7 +11,7 @@ An issue kanban for herdr-app, opened from an Issues tab next to Files and Chang
 - Left click shows the body as a markdown preview, with the frontmatter folded above it
 - Added or updated cards flash for a moment
 - Run from the right-click menu. While an agent is running, "Go to pane" in the menu or the "Pane ↗" button on the card focuses its pane
-- When finished, the agent writes a `## Summary` into the issue
+- While working, the agent checks off `## Todo` and `## Goal` items and writes to `## Memo`, `## References` and `## Logs`
 - Issues done for more than 24 hours are hidden (the file stays)
 
 ## Requirements
@@ -91,17 +91,33 @@ worktree:
 created: 2026-11-10 10:00
 updated: 2026-11-10 10:00
 ---
-## Description
-What to do
+## Summary
+Overview and background in a few lines.
 
-## Acceptance criteria
+## Goal
 - [ ] `make test` passes
 
-## Summary
-Written by the agent when it finishes.
+## Todo
+- [ ] Add validation to the form
 
-## Log
+## Memo
+Notes found while working, one paragraph each.
+
+## References
+- [Design doc](https://example.com/doc)
+
+## Logs
+- 2026-11-10 10:05: Run started (space #12 Fix login form validation, branch issue/12-fix-login-form-validation)
 ```
+
+| Section | Content |
+| --- | --- |
+| `## Summary` | Overview and background in a few lines |
+| `## Goal` | Done conditions, written as states |
+| `## Todo` | Actions to reach the Goal |
+| `## Memo` | Free notes taken while working, one paragraph each |
+| `## References` | Related tickets, documents, Slack, mail, JIRA, GitHub links |
+| `## Logs` | One line per entry: `- datetime: description` |
 
 | Key | Meaning |
 | --- | --- |
@@ -117,7 +133,7 @@ Written by the agent when it finishes.
 
 1. Creates a worktree on branch `issue/<id>-<title>` in `repository` (reuses it if it exists).
 2. Starts the agent in the `workspace` space or tab and asks it to work on the issue.
-3. The agent logs milestones with the `herdr-issues` skill, checks off acceptance criteria it has verified, writes a summary, and sets the status to `done`.
+3. The agent logs milestones with the `herdr-issues` skill, checks off Todo items it has done and Goal items it has verified, writes findings to Memo, and sets the status to `done`.
 4. If the agent is blocked on someone else, it sets the status to `waiting` with the condition to resume.
 
 ### Skill
@@ -129,8 +145,9 @@ S=~/.claude/skills/herdr-issues/issues.sh   # with install.sh; elsewhere for plu
 $S list
 $S new "Title" /path/to/repo
 $S log 3 "Added tests"
-$S check 3 1
-$S summary 3 "What was done, results, open points"
+$S check 3 1          # Goal item 1
+$S check 3 todo 1     # Todo item 1
+$S summary 3 "Overview and background"
 $S status 3 done
 $S run 3        # same as Run on the board (herdr-app must be running)
 ```

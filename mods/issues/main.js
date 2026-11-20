@@ -18,7 +18,7 @@ const FADE = { ms: 33, frames: 48, pulses: 2, min: 0.25 };
 const NEW_BODY = "## Summary\n\n\n## Goal\n- [ ] \n\n## Todo\n- [ ] \n\n## Memo\n\n\n## References\n\n\n## Logs\n";
 
 const openEdit = (id) => openOverlay({ mod: "issues", props: { view: "edit", id }, kind: "dialog", modal: true, width: 640, height: 520 });
-const openView = (id) => openOverlay({ mod: "issues", props: { view: "view", id }, kind: "dialog", width: 640, height: 520 });
+const openView = (id) => openOverlay({ mod: "issues", props: { view: "view", id }, kind: "dialog", width: 800, height: 640 });
 const openMenu = (id, agent, confirm = false) => openOverlay({ mod: "issues", props: { view: "menu", id, confirm }, kind: "popup", width: 200, height: confirm ? 110 : agent ? 282 : 250 });
 const fail = (e) => notify({ title: "issues", body: String(e?.message ?? e), level: "error" });
 const task = (cx, fn) => cx.spawn(async () => { try { await fn(); } catch (e) { fail(e); } });
@@ -278,6 +278,30 @@ function hardBreaks(md) {
   }).join("\n");
 }
 
+// Puts a horizontal rule before every "## " heading but the first, outside code fences.
+function rules(md) {
+  let fence = false, seen = false;
+  return md.split("\n").flatMap((l, i, a) => {
+    if (/^\s*(```|~~~)/.test(l)) fence = !fence;
+    if (fence || !l.startsWith("## ")) return [l];
+    if (!seen) { seen = true; return [l]; }
+    return [...(a[i - 1]?.trim() ? [""] : []), "---", "", l];
+  }).join("\n");
+}
+
+// Splits the "## Logs" (or older "## Log") section off the body; logs are newest first.
+function splitLogs(body) {
+  const lines = body.split("\n");
+  const at = lines.findIndex((l) => l === "## Logs" || l === "## Log");
+  if (at < 0) return { main: body, logs: [] };
+  let end = lines.findIndex((l, i) => i > at && l.startsWith("## "));
+  if (end < 0) end = lines.length;
+  return {
+    main: [...lines.slice(0, at), ...lines.slice(end)].join("\n").replace(/\s+$/, "\n"),
+    logs: lines.slice(at + 1, end).filter((l) => l.trim()).reverse(),
+  };
+}
+
 class Preview {
   init(cx) {
     this.handle = cx.focus_handle();
@@ -290,18 +314,23 @@ class Preview {
     const p = props();
     const close = () => closeOverlay(p.overlay);
     const fm = this.issue && /^---\r?\n([\s\S]*?)\r?\n---/.exec(this.issue.raw)?.[1];
+    const { main, logs } = splitLogs(this.issue?.body ?? "");
     return v_flex().id("issues-view").track_focus(this.handle).size_full().p(18).bg(t.popover).text_color(t.foreground)
       .on_key_down((e, cx) => { if (e.key === "escape") { close(); cx.stop_propagation(); } })
       .child(h_flex().gap(8).items_start()
         .child(div().flex_1().min_w(0).text_size(15).font_semibold().child(`#${p.id} ${this.issue?.meta.title ?? ""}`))
         .child(div().id("issues-close").flex_none().p(3).rounded(4).text_color(t.dim).cursor_pointer()
           .hover((s) => s.bg(t.hover).text_color(t.foreground)).on_click(close).child(svg("mods/pane/close.svg").size(14))))
-      .child(div().id("issues-view-body").flex_1().min_h(0).mt(12).overflow_y_scrollbar().text_size(12.8)
+      .child(div().id("issues-view-body").flex_1().min_h(0).mt(12).overflow_y_scrollbar().text_size(14)
         .when(Boolean(fm), (el) => el
           .child(div().id("issues-fm").mb(8).text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
             .on_click((_e, cx) => { this.meta = !this.meta; cx.notify(); }).child(`${this.meta ? "▾" : "▸"} Frontmatter`))
           .when(Boolean(this.meta), (el) => el.child(TextView.markdown(`issues-fm-${p.id}`, `\`\`\`yaml\n${fm}\n\`\`\``))))
-        .child(TextView.markdown(`issues-md-${p.id}`, hardBreaks(this.issue?.body ?? ""))))
+        .child(TextView.markdown(`issues-md-${p.id}`, hardBreaks(rules(main))))
+        .when(logs.length > 0, (el) => el
+          .child(div().id("issues-logs").mt(12).text_size(11.5).text_color(t.dim).cursor_pointer().hover((s) => s.text_color(t.foreground))
+            .on_click((_e, cx) => { this.logs = !this.logs; cx.notify(); }).child(`${this.logs ? "▾" : "▸"} Logs (${logs.length})`))
+          .when(Boolean(this.logs), (el) => el.child(TextView.markdown(`issues-logs-${p.id}`, logs.join("\n"))))))
       .child(h_flex().pt(14).gap(8).justify_end()
         .when(Boolean(this.issue && hasAgent(this.issue.meta)), (el) => el
           .child(button(t, "issues-pane", "Pane ↗", false, () => { focusIssue(this.issue.meta); close(); })))

@@ -124,7 +124,7 @@ describe("Board", () => {
     els = render();
     on(els, "card-2", "on_mouse_down:left")();
     on(els, "col-todo", "on_mouse_up:left")({}, cx);
-    expect(H.overlays.at(-1).props).toEqual({ view: "view", id: 2 });
+    expect(H.overlays.at(-1)).toMatchObject({ props: { view: "view", id: 2 }, width: 800, height: 640 });
 
     on(els, "col-todo", "on_mouse_up:left")({}, cx);
     on(els, "col-todo", "on_mouse_move")({}, cx);
@@ -371,7 +371,7 @@ describe("Preview", () => {
     await flush();
     const els = render();
     expect(H.texts).toContain("#1 A");
-    expect(H.texts).toContain("## Description  \nDo it  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n\n## Log  \n");
+    expect(H.texts).toContain("## Description  \nDo it  \n\n---  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n");
     on(els, "issues-view", "on_key_down")({ key: "a" }, cx);
     on(els, "issues-view", "on_key_down")({ key: "escape" }, cx);
     on(els, "issues-close", "on_click")();
@@ -412,6 +412,35 @@ describe("Preview", () => {
     expect(H.closed).toEqual(["q"]);
   });
 
+  test("a rule goes before every heading but the first, outside code fences", async () => {
+    await store.create({ title: "A", repository: "", body: "## A\nx\n```\n## not\n```\n## B\ny" });
+    const { render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    render();
+    expect(H.texts).toContain("## A  \nx  \n```\n## not\n```\n\n---  \n\n## B  \ny");
+  });
+
+  test("Logs are split off, folded with a count, and newest first", async () => {
+    await store.create({ title: "A", repository: "", body: "## Summary\ns\n\n## Logs\n- 1: a\n- 2: b\n\n## After\nz\n" });
+    const { cx, render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    let els = render();
+    expect(H.texts).toContain("## Summary  \ns  \n\n---  \n\n## After  \nz  \n");
+    expect(H.texts).toContain("▸ Logs (2)");
+    expect(H.texts).not.toContain("- 2: b\n- 1: a");
+    on(els, "issues-logs", "on_click")({}, cx);
+    els = render();
+    expect(H.texts).toContain("▾ Logs (2)");
+    expect(H.texts).toContain("- 2: b\n- 1: a");
+  });
+
+  test("no Logs section, no fold", async () => {
+    await store.create({ title: "A", repository: "", body: "## Summary\ns\n\n## Logs\n" });
+    const { render } = mount({ view: "view", id: 1, overlay: "p" });
+    await flush();
+    expect(render()["issues-logs"]).toBeUndefined();
+  });
+
   test("frontmatter is folded until its header is clicked", async () => {
     await seed();
     const { cx, render } = mount({ view: "view", id: 1, overlay: "p" });
@@ -437,6 +466,6 @@ describe("Preview", () => {
     await flush();
     const els = render();
     expect(els["issues-fm"]).toBeUndefined();
-    expect(H.texts).toContain("## Description  \nDo it  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n\n## Log  \n");
+    expect(H.texts).toContain("## Description  \nDo it  \n\n---  \n\n## Acceptance criteria  \n- [x] a  \n- [ ] b  \n");
   });
 });
